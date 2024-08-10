@@ -1,3 +1,5 @@
 a
 program
 cube.c
+*.o
+snek

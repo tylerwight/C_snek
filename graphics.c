@@ -55,14 +55,3 @@ GLuint createShaderProgram(){
 
     return shaderProgram;
 }
-
-// Function to update vertex data
-void updateVertices(float vertices[], float posX, float posY){
-    float size = 0.2f; // Half size of the quad
-    vertices[0] = posX - size; vertices[1] = posY - size; vertices[2] = 0.0f;
-    vertices[3] = posX + size; vertices[4] = posY - size; vertices[5] = 0.0f;
-    vertices[6] = posX + size; vertices[7] = posY + size; vertices[8] = 0.0f;
-    vertices[9] = posX + size; vertices[10] = posY + size; vertices[11] = 0.0f;
-    vertices[12] = posX - size; vertices[13] = posY + size; vertices[14] = 0.0f;
-    vertices[15] = posX - size; vertices[16] = posY - size; vertices[17] = 0.0f;
-}

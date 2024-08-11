@@ -4,13 +4,12 @@
 #include <stdlib.h>
 #include "graphics.h"
 
-
-
 struct snake{
     float pos_x;
     float pos_y;
     float width;
     int snake_length;
+    float vertices[18];
 
 };
 typedef struct snake snake;
@@ -19,9 +18,8 @@ struct food{
     float pos_x;
     float pos_y;
     float width;
+    float vertices[18];
 };
-
-
 typedef struct food food;
 
 int resolution_x;
@@ -32,14 +30,12 @@ int downPressed = 0;
 int leftPressed = 0;
 int rightPressed = 0;
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void processMovement(float *X, float *Y, float speed, float size);
-void updateVertices(float vertices[], float posX, float posY, float size);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void process_movement(float *player_x, float *player_y, float food_x, float food_y, float speed, float player_size, float food_size);
+void update_vertices(float vertices[], float posX, float posY, float size);
+int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
 
-void setup_opengl(){
-
-    
-}
+GLFWwindow* setup_opengl();
 
 
 int main(void){
@@ -52,75 +48,58 @@ int main(void){
     player.pos_x = 0.0f;
     player.pos_y = 0.0f;
     player.width = 0.05f;
-    food.pos_x = 0.0f;
-    food.pos_y = 0.0f;
-    printf("resolution ratio= %f, resx = %d, resy = %d", resolution_ratio, resolution_x, resolution_y);
+    food.pos_x = 0.5f;
+    food.pos_y = 0.5f;
+    food.width = 0.01;
+    update_vertices(player.vertices, player.pos_x, player.pos_y, player.width);
+    update_vertices(food.vertices, food.pos_x, food.pos_y, food.width);
 
 
-    if (!glfwInit()){return -1;}
+    window = setup_opengl();
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    GLuint VBO[2], VAO[2];
+    glGenBuffers(2, VBO);
+    glGenVertexArrays(2, VAO);
 
-    window = glfwCreateWindow(resolution_x, resolution_y, "Snek", NULL, NULL);
-    if (!window){
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-
-    if (glewInit() != GLEW_OK)
-    {
-        printf("Failed to initialize GLEW\n");
-        return -1;
-    }
-
-    glfwSetKeyCallback(window, keyCallback);
-
-    float vertices[18];
-    updateVertices(vertices, player.pos_x, player.pos_y, player.width);
-
-    GLuint VBO, VAO;
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    setup_vertx_data(VBO[0], VAO[0], player.vertices, sizeof(player.vertices)/sizeof(float));
+    setup_vertx_data(VBO[1], VAO[1], food.vertices, sizeof(food.vertices)/sizeof(float));
 
     GLuint shaderProgram = createShaderProgram();
 
-    while (!glfwWindowShouldClose(window))
-    {
-        processMovement(&player.pos_x, &player.pos_y, 0.001, player.width);
+    while (!glfwWindowShouldClose(window)){
+        process_movement(&player.pos_x, &player.pos_y, food.pos_x, food.pos_y, 0.001, player.width, food.width);
+        // void process_movement(float *player_x, float *player_y, float *food_x, float *food_y, float speed, float player_size, float food_size);
 
-        updateVertices(vertices, player.pos_x, player.pos_y, player.width);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glClear(GL_COLOR_BUFFER_BIT);
+        update_vertices(player.vertices, player.pos_x, player.pos_y, player.width);
+        update_vertices(food.vertices, food.pos_x, food.pos_y, food.width);
 
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        //player
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(player.vertices), player.vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(VAO[0]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
+        
+        //food
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(food.vertices), food.vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(VAO[1]);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(2, VAO);
+    glDeleteBuffers(2, VBO);
     glDeleteProgram(shaderProgram);
 
     glfwTerminate();
@@ -129,7 +108,7 @@ int main(void){
 
 
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (action == GLFW_PRESS || action == GLFW_RELEASE) {
       int value;
       if (action == GLFW_PRESS) {
@@ -156,22 +135,46 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 
 
-void processMovement(float *X, float *Y, float speed, float size){    
-    if (upPressed && ((*Y + size) * resolution_ratio) < 1.0f) {
-        *Y += speed;
+// void process_movement(float *player_x, float *player_y, float *food_x, float *food_y, float speed, float player_size, float food_size){    
+//     if (upPressed && ((*player_y + player_size) * resolution_ratio) < 1.0f) {
+//         *player_y += speed;
+//     }
+//     if (downPressed && ((*player_y - player_size) * resolution_ratio) > -1.0f) {
+//         *player_y -= speed;
+//     }
+//     if (leftPressed && (*player_x - player_size) > -1.0f) {
+//         *player_x -= speed;
+//     }
+//     if (rightPressed && (*player_x + player_size) < 1.0f) {
+//         *player_x += speed;
+//     }
+// }
+void process_movement(float *player_x, float *player_y, float food_x, float food_y, float speed, float player_size, float food_size) {  
+      
+    if (upPressed && ((*player_y + player_size) * resolution_ratio) < 1.0f) {
+        if (!check_collision(*player_x, *player_y + speed, player_size, food_x, food_y, food_size * resolution_ratio)) {
+            *player_y += speed;
+        }
     }
-    if (downPressed && ((*Y - size) * resolution_ratio) > -1.0f) {
-        *Y -= speed;
+    if (downPressed && ((*player_y - player_size) * resolution_ratio) > -1.0f) {
+        if (!check_collision(*player_x, *player_y - speed, player_size, food_x, food_y, food_size * resolution_ratio)) {
+            *player_y -= speed;
+        }
     }
-    if (leftPressed && (*X - size) > -1.0f) {
-        *X -= speed;
+    if (leftPressed && (*player_x - player_size) > -1.0f) {
+        if (!check_collision(*player_x - speed, *player_y, player_size, food_x, food_y, food_size)) {
+            *player_x -= speed;
+        }
     }
-    if (rightPressed && (*X + size) < 1.0f) {
-        *X += speed;
+    if (rightPressed && (*player_x + player_size) < 1.0f) {
+        if (!check_collision(*player_x + speed, *player_y, player_size, food_x, food_y, food_size)) {
+            *player_x += speed;
+        }
     }
 }
 
-void updateVertices(float vertices[], float posX, float posY, float size){
+
+void update_vertices(float vertices[], float posX, float posY, float size){
     //float size = 0.2f; // Half size of the quad
     vertices[0] = posX - size; vertices[1] = (posY - size) * resolution_ratio; vertices[2] = 0.0f;
     vertices[3] = posX + size; vertices[4] = (posY - size) * resolution_ratio; vertices[5] = 0.0f;
@@ -179,4 +182,49 @@ void updateVertices(float vertices[], float posX, float posY, float size){
     vertices[9] = posX + size; vertices[10] = (posY + size) * resolution_ratio; vertices[11] = 0.0f;
     vertices[12] = posX - size; vertices[13] = (posY + size) * resolution_ratio; vertices[14] = 0.0f;
     vertices[15] = posX - size; vertices[16] = (posY - size) * resolution_ratio; vertices[17] = 0.0f;
+}
+
+
+
+GLFWwindow* setup_opengl(){
+    GLFWwindow* window;
+    if (!glfwInit()){exit(-1);}
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        window = glfwCreateWindow(resolution_x, resolution_y, "Snek", NULL, NULL);
+        if (!window){
+            glfwTerminate();
+            exit(-1);
+        }
+
+    glfwMakeContextCurrent(window);
+
+        if (glewInit() != GLEW_OK)
+        {
+            printf("Failed to initialize GLEW\n");
+            exit(-1);
+        }
+
+    glfwSetKeyCallback(window, key_callback);
+
+    return window;
+    
+}
+
+int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size) {
+
+    if (player_x + player_size < food_x - food_size || food_x + food_size < player_x - player_size) {
+        return 0;
+    }
+    
+    // Check if one quad is above the other
+    if (player_y + player_size < food_y - food_size || food_y + food_size < player_y - player_size) {
+        return 0;
+    }
+    
+    // If neither of the above cases are true, the quads are colliding
+    return 1;
 }

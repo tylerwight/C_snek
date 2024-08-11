@@ -9,7 +9,7 @@ struct snake{
     float pos_y;
     float width;
     int snake_length;
-    float vertices[18];
+    float vertices[36];
 
 };
 typedef struct snake snake;
@@ -18,7 +18,7 @@ struct food{
     float pos_x;
     float pos_y;
     float width;
-    float vertices[18];
+    float vertices[36]; //18
 };
 typedef struct food food;
 
@@ -32,7 +32,8 @@ int rightPressed = 0;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void process_movement(float *player_x, float *player_y, float food_x, float food_y, float speed, float player_size, float food_size);
-void update_vertices(float vertices[], float posX, float posY, float size);
+//void update_vertices(float vertices[], float posX, float posY, float size);
+void update_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
 int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
 
 GLFWwindow* setup_opengl();
@@ -51,8 +52,10 @@ int main(void){
     food.pos_x = 0.5f;
     food.pos_y = 0.5f;
     food.width = 0.01;
-    update_vertices(player.vertices, player.pos_x, player.pos_y, player.width);
-    update_vertices(food.vertices, food.pos_x, food.pos_y, food.width);
+    // update_vertices(player.vertices, player.pos_x, player.pos_y, player.width);
+    // update_vertices(food.vertices, food.pos_x, food.pos_y, food.width);
+    update_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
+    update_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
 
 
     window = setup_opengl();
@@ -70,8 +73,8 @@ int main(void){
         process_movement(&player.pos_x, &player.pos_y, food.pos_x, food.pos_y, 0.001, player.width, food.width);
         // void process_movement(float *player_x, float *player_y, float *food_x, float *food_y, float speed, float player_size, float food_size);
 
-        update_vertices(player.vertices, player.pos_x, player.pos_y, player.width);
-        update_vertices(food.vertices, food.pos_x, food.pos_y, food.width);
+        update_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
+        update_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
 
         glUseProgram(shaderProgram);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -135,20 +138,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 
-// void process_movement(float *player_x, float *player_y, float *food_x, float *food_y, float speed, float player_size, float food_size){    
-//     if (upPressed && ((*player_y + player_size) * resolution_ratio) < 1.0f) {
-//         *player_y += speed;
-//     }
-//     if (downPressed && ((*player_y - player_size) * resolution_ratio) > -1.0f) {
-//         *player_y -= speed;
-//     }
-//     if (leftPressed && (*player_x - player_size) > -1.0f) {
-//         *player_x -= speed;
-//     }
-//     if (rightPressed && (*player_x + player_size) < 1.0f) {
-//         *player_x += speed;
-//     }
-// }
 void process_movement(float *player_x, float *player_y, float food_x, float food_y, float speed, float player_size, float food_size) {  
       
     if (upPressed && ((*player_y + player_size) * resolution_ratio) < 1.0f) {
@@ -173,16 +162,32 @@ void process_movement(float *player_x, float *player_y, float food_x, float food
     }
 }
 
-
-void update_vertices(float vertices[], float posX, float posY, float size){
-    //float size = 0.2f; // Half size of the quad
+void update_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b) {
+    // Vertex 1 (bottom-left)
     vertices[0] = posX - size; vertices[1] = (posY - size) * resolution_ratio; vertices[2] = 0.0f;
-    vertices[3] = posX + size; vertices[4] = (posY - size) * resolution_ratio; vertices[5] = 0.0f;
-    vertices[6] = posX + size; vertices[7] = (posY + size) * resolution_ratio; vertices[8] = 0.0f;
-    vertices[9] = posX + size; vertices[10] = (posY + size) * resolution_ratio; vertices[11] = 0.0f;
-    vertices[12] = posX - size; vertices[13] = (posY + size) * resolution_ratio; vertices[14] = 0.0f;
-    vertices[15] = posX - size; vertices[16] = (posY - size) * resolution_ratio; vertices[17] = 0.0f;
+    vertices[3] = r; vertices[4] = g; vertices[5] = b;
+
+    // Vertex 2 (bottom-right)
+    vertices[6] = posX + size; vertices[7] = (posY - size) * resolution_ratio; vertices[8] = 0.0f;
+    vertices[9] = r; vertices[10] = g; vertices[11] = b;
+
+    // Vertex 3 (top-right)
+    vertices[12] = posX + size; vertices[13] = (posY + size) * resolution_ratio; vertices[14] = 0.0f;
+    vertices[15] = r; vertices[16] = g; vertices[17] = b;
+
+    // Vertex 4 (top-right)
+    vertices[18] = posX + size; vertices[19] = (posY + size) * resolution_ratio; vertices[20] = 0.0f;
+    vertices[21] = r; vertices[22] = g; vertices[23] = b;
+
+    // Vertex 5 (top-left)
+    vertices[24] = posX - size; vertices[25] = (posY + size) * resolution_ratio; vertices[26] = 0.0f;
+    vertices[27] = r; vertices[28] = g; vertices[29] = b;
+
+    // Vertex 6 (bottom-left)
+    vertices[30] = posX - size; vertices[31] = (posY - size) * resolution_ratio; vertices[32] = 0.0f;
+    vertices[33] = r; vertices[34] = g; vertices[35] = b;
 }
+
 
 
 

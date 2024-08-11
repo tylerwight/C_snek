@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "graphics.h"
 
 struct snake{
@@ -18,7 +19,7 @@ struct food{
     float pos_x;
     float pos_y;
     float width;
-    float vertices[36]; //18
+    float vertices[36];
 };
 typedef struct food food;
 
@@ -32,9 +33,9 @@ int rightPressed = 0;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void process_movement(float *player_x, float *player_y, float food_x, float food_y, float speed, float player_size, float food_size);
-//void update_vertices(float vertices[], float posX, float posY, float size);
 void update_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
 int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
+void randomize_food_coords(food *food, snake *player);
 
 GLFWwindow* setup_opengl();
 
@@ -43,17 +44,19 @@ int main(void){
     GLFWwindow* window;
     snake player;
     food food;
+    srand(time(NULL));
     resolution_x = 1024;
     resolution_y = 768;
     resolution_ratio = (float)resolution_x / (float)resolution_y;
     player.pos_x = 0.0f;
     player.pos_y = 0.0f;
     player.width = 0.05f;
-    food.pos_x = 0.5f;
-    food.pos_y = 0.5f;
-    food.width = 0.01;
-    // update_vertices(player.vertices, player.pos_x, player.pos_y, player.width);
-    // update_vertices(food.vertices, food.pos_x, food.pos_y, food.width);
+    food.pos_x = 0.0f;
+    food.pos_y = 0.0f;
+    food.width = 0.01f;
+    randomize_food_coords(&food, &player);
+    printf(" food_x: %f, food_y: %f\n", food.pos_x, food.pos_y);
+    
     update_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
     update_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
 
@@ -110,6 +113,16 @@ int main(void){
 }
 
 
+void randomize_food_coords(food *food, snake *player){
+    float random_number = (float)rand() / RAND_MAX;
+    while (check_collision(player->pos_x, player->pos_y, player->width, food->pos_x, food->pos_y, food->width * resolution_ratio)){
+        food->pos_x = -0.7f + random_number * (0.7f - (-0.7f));
+        random_number = (float)rand() / RAND_MAX;
+        food->pos_y = -0.7f + random_number * (0.7f - (-0.7f));
+    }
+}
+
+
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (action == GLFW_PRESS || action == GLFW_RELEASE) {
@@ -132,6 +145,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                 break;
             case GLFW_KEY_RIGHT:
                 rightPressed = value;
+                break;
+            case GLFW_KEY_ESCAPE:
+                exit(0);
                 break;
         }
     }

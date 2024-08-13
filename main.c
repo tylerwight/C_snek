@@ -34,7 +34,7 @@ int leftPressed = 0;
 int rightPressed = 0;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void process_movement(snake *player_snake, food *food_item, float speed, float resolution_ratio);
+void process_movement(snake *player, food *food_item, float speed, float resolution_ratio, int *score);
 void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
 int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
 void randomize_food_coords(food *food, snake *player);
@@ -45,8 +45,11 @@ int main(void){
     GLFWwindow* window;
     snake player;
     food food;
+    Character Characters[128];
     const char* fragment_shader_quads_source = load_shader_source("fragment_shader_quads.glsl");
     const char* vertex_shader_quads_source = load_shader_source("vertex_shader_quads.glsl");
+    const char* fragment_shader_text_source = load_shader_source("fragment_shader_text.glsl");
+    const char* vertex_shader_text_source = load_shader_source("vertex_shader_text.glsl");
     srand(time(NULL));
     int resolution_x = 1024;
     int resolution_y = 768;
@@ -58,30 +61,34 @@ int main(void){
     food.pos_x = 0.0f;
     food.pos_y = 0.0f;
     food.width = 0.01f;
+    int score = 0;
     randomize_food_coords(&food, &player);
     
     update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
     update_quad_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
     window = setup_opengl(resolution_x, resolution_y, key_callback);
-    
+    load_fonts(Characters, 128, "Montserrat.ttf");
     
     int objects_count = 3;
     GLuint VBO[objects_count], VAO[objects_count];
     glGenBuffers(objects_count, VBO);
     glGenVertexArrays(objects_count, VAO);
 
-    setup_vertx_data(VBO[0], VAO[0], player.vertices, sizeof(player.vertices)/sizeof(float));
-    setup_vertx_data(VBO[1], VAO[1], food.vertices, sizeof(food.vertices)/sizeof(float));
+    setup_quad_vertx_data(VBO[0], VAO[0], player.vertices, sizeof(player.vertices)/sizeof(float));
+    setup_quad_vertx_data(VBO[1], VAO[1], food.vertices, sizeof(food.vertices)/sizeof(float));
+    setup_text_vertx_data(VBO[2], VAO[2]);
 
-    GLuint shaderProgram = createShaderProgram(vertex_shader_quads_source, fragment_shader_quads_source);
+    GLuint shader_program_quads = createShaderProgram(vertex_shader_quads_source, fragment_shader_quads_source);
+    GLuint shader_program_text = createShaderProgram(vertex_shader_text_source, fragment_shader_text_source);
 
     while (!glfwWindowShouldClose(window)){
-        process_movement(&player, &food, 0.002, resolution_ratio);
-
+        process_movement(&player, &food, 0.002, resolution_ratio, &score);
         update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
         update_quad_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
+        char score_text[10];
+        sprintf(score_text, "%d", score);
 
-        glUseProgram(shaderProgram);
+        glUseProgram(shader_program_quads);
         glClear(GL_COLOR_BUFFER_BIT);
 
         //player
@@ -100,6 +107,10 @@ int main(void){
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 
+        //text
+        float color[3] = {0.0f, 1.0f, 1.0f};
+        RenderText(shader_program_text, "Score: ", 25.0f, 725.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
+        RenderText(shader_program_text, score_text, 200.0f, 725.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
 
 
         glfwSwapBuffers(window);
@@ -108,7 +119,7 @@ int main(void){
 
     glDeleteVertexArrays(2, VAO);
     glDeleteBuffers(2, VBO);
-    glDeleteProgram(shaderProgram);
+    glDeleteProgram(shader_program_quads);
 
     glfwTerminate();
     return 0;
@@ -155,13 +166,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-void process_movement(snake *player, food *food_item, float speed, float resolution_ratio) {
+void process_movement(snake *player, food *food_item, float speed, float resolution_ratio, int *score) {
     
     if (upPressed && ((player->pos_y + player->width) * resolution_ratio) < 1.0f) {
         if (!check_collision(player->pos_x, player->pos_y + speed, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
             player->pos_y += speed;
         } else{
             randomize_food_coords(food_item, player);
+            *score += 1;
         }
     }
     if (downPressed && ((player->pos_y - player->width) * resolution_ratio) > -1.0f) {
@@ -169,6 +181,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
             player->pos_y -= speed;
         } else{
             randomize_food_coords(food_item, player);
+            *score += 1;
         }
     }
     if (leftPressed && (player->pos_x - player->width) > -1.0f) {
@@ -176,6 +189,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
             player->pos_x -= speed;
         } else{
             randomize_food_coords(food_item, player);
+            *score += 1;
         }
     }
     if (rightPressed && (player->pos_x + player->width) < 1.0f) {
@@ -183,6 +197,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
             player->pos_x += speed;
         } else{
             randomize_food_coords(food_item, player);
+            *score += 1;
         }
     }
 }

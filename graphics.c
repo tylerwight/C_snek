@@ -63,8 +63,53 @@ GLuint createShaderProgram(const char* vertex_shader_source, const char* fragmen
     return shaderProgram;
 }
 
+void RenderText(GLuint shaderProgram, const char* text, float x, float y, float scale, float color[3], int resolution_x, int resolution_y, Character Characters[], GLuint VAO, GLuint VBO) {
+    glUseProgram(shaderProgram);
+    mat4 projection;
+    glm_ortho(0.0f, resolution_x, 0.0f, resolution_y, -1.0f, 1.0f, projection);
+    GLuint projLoc = glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, (float*)projection);
 
-void setup_vertx_data(GLuint VBO, GLuint VAO, float vertices[], int vertex_count) {
+    GLint textColorLocation = glGetUniformLocation(shaderProgram, "textColor");
+    glUniform3f(textColorLocation, color[0], color[1], color[2]);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(VAO);
+
+    for (const char* p = text; *p; p++) {
+        Character ch = Characters[*p];
+
+        float xpos = x + ch.Bearing[0] * scale;
+        float ypos = y - (ch.Size[1] - ch.Bearing[1]) * scale;
+
+        float w = ch.Size[0] * scale;
+        float h = ch.Size[1] * scale;
+        //printf("letter = %c, xpos: %f, ypos: %f, w: %f, h: %f\n", *p, xpos, ypos, w, h);
+        float vertices[6][4] = {
+            { xpos,     ypos + h,   0.0f, 0.0f },            
+            { xpos,     ypos,       0.0f, 1.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+            { xpos + w, ypos + h,   1.0f, 0.0f }           
+        };
+        //printf("letter = %c, textureID = %c\n", *p, ch.TextureID );
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        x += (ch.Advance >> 6) * scale;
+    }
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void setup_quad_vertx_data(GLuint VBO, GLuint VAO, float vertices[], int vertex_count) {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(float), vertices, GL_DYNAMIC_DRAW);
@@ -81,6 +126,19 @@ void setup_vertx_data(GLuint VBO, GLuint VAO, float vertices[], int vertex_count
     glBindVertexArray(0);
 }
 
+
+void setup_text_vertx_data(GLuint VBO, GLuint VAO) {
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+
+    // attribute
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
 
 const char* load_shader_source(const char* file_path) {
     FILE* file = fopen(file_path, "r");
@@ -108,7 +166,7 @@ const char* load_shader_source(const char* file_path) {
 }
 
 
-void load_fonts(Character *Characters, int Characters_length){
+void load_fonts(Character *Characters, int Characters_length, const char *font_name){
     FT_Library ft;
     if (FT_Init_FreeType(&ft)) {
         fprintf(stderr, "Could not init FreeType Library\n");
@@ -116,14 +174,14 @@ void load_fonts(Character *Characters, int Characters_length){
     }
 
     FT_Face face;
-    if (FT_New_Face(ft, "Montserrat.ttf", 0, &face)) {
+    if (FT_New_Face(ft, font_name, 0, &face)) {
         fprintf(stderr, "Failed to load font\n");
         exit(EXIT_FAILURE);
     }
 
     FT_Set_Pixel_Sizes(face, 0, 48);
 
-    for (unsigned char c = 0; c < 128; c++) {
+    for (unsigned char c = 0; c < Characters_length; c++) {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
             fprintf(stderr, "Failed to load Glyph\n");
             continue;
@@ -164,7 +222,7 @@ void load_fonts(Character *Characters, int Characters_length){
 }
 
 //GLFWwindow* window, int key, int scancode, int action, int mods
-GLFWwindow* setup_opengl(int resolution_x, int resolution_y, int (*key_callback)(GLFWwindow*, int, int, int, int) ){
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) ){
     GLFWwindow* window;
     if (!glfwInit()){exit(-1);}
 
@@ -190,5 +248,6 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, int (*key_callback)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     return window;
 }

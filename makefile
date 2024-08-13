@@ -9,19 +9,21 @@ SRCS = main.c graphics.c
 
 # Object files
 OBJS = $(SRCS:.c=.o)
+INCLUDES = -I/usr/include/freetype2 -I/usr/include/libpng16
 
 # Libraries
-LIBS = -lm -lglfw -lGLEW -lGL
+LIBS = -lm -lglfw -lGLEW -lGL -lfreetype
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -O2
+CFLAGS = $(INCLUDES) -Wall -Wextra -O2
+LDFLAGS = $(LIBS)
 
 # Default rule
 all: $(TARGET)
 
 # Rule to build the executable
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(OBJS) $(LIBS)
+	$(CC) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
 # Rule to compile source files into object files
 %.o: %.c

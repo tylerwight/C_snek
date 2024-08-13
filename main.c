@@ -44,6 +44,8 @@ int main(void){
     GLFWwindow* window;
     snake player;
     food food;
+    const char* fragment_shader_quads_source = load_shader_source("fragment_shader_quads.glsl");
+    const char* vertex_shader_quads_source = load_shader_source("vertex_shader_quads.glsl");
     srand(time(NULL));
     resolution_x = 1024;
     resolution_y = 768;
@@ -51,6 +53,7 @@ int main(void){
     player.pos_x = 0.0f;
     player.pos_y = 0.0f;
     player.width = 0.05f;
+    player.snake_length = 2;
     food.pos_x = 0.0f;
     food.pos_y = 0.0f;
     food.width = 0.01f;
@@ -71,7 +74,7 @@ int main(void){
     setup_vertx_data(VBO[0], VAO[0], player.vertices, sizeof(player.vertices)/sizeof(float));
     setup_vertx_data(VBO[1], VAO[1], food.vertices, sizeof(food.vertices)/sizeof(float));
 
-    GLuint shaderProgram = createShaderProgram();
+    GLuint shaderProgram = createShaderProgram(vertex_shader_quads_source, fragment_shader_quads_source);
 
     while (!glfwWindowShouldClose(window)){
         process_movement(&player, &food, 0.002, resolution_ratio);

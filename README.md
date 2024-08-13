@@ -1,4 +1,5 @@
 
+#C_snek
 Snake written in pure C using only:
 - GLFW + GLEW - Opengl setup
 - freetype for font loading

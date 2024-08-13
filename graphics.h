@@ -32,5 +32,6 @@ GLuint createShaderProgram(const char* vertex_shader_source, const char* fragmen
 void setup_vertx_data(GLuint VBO, GLuint VAO, float vertices[], int vertex_count);
 const char* load_shader_source(const char* file_path);
 void load_fonts(Character *Characters, int Characters_length);
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, int (*key_callback)(GLFWwindow*, int, int, int, int) );
 
 #endif

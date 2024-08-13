@@ -23,8 +23,10 @@ struct food{
 };
 typedef struct food food;
 
-int resolution_x;
-int resolution_y;
+enum render_objects {PLAYER, FOOD, TEXT};
+
+// int resolution_x;
+// int resolution_y;
 float resolution_ratio;
 int upPressed = 0;
 int downPressed = 0;
@@ -33,11 +35,10 @@ int rightPressed = 0;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void process_movement(snake *player_snake, food *food_item, float speed, float resolution_ratio);
-void update_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
+void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
 int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
 void randomize_food_coords(food *food, snake *player);
 
-GLFWwindow* setup_opengl();
 
 
 int main(void){
@@ -47,8 +48,8 @@ int main(void){
     const char* fragment_shader_quads_source = load_shader_source("fragment_shader_quads.glsl");
     const char* vertex_shader_quads_source = load_shader_source("vertex_shader_quads.glsl");
     srand(time(NULL));
-    resolution_x = 1024;
-    resolution_y = 768;
+    int resolution_x = 1024;
+    int resolution_y = 768;
     resolution_ratio = (float)resolution_x / (float)resolution_y;
     player.pos_x = 0.0f;
     player.pos_y = 0.0f;
@@ -58,15 +59,13 @@ int main(void){
     food.pos_y = 0.0f;
     food.width = 0.01f;
     randomize_food_coords(&food, &player);
-    printf(" food_x: %f, food_y: %f\n", food.pos_x, food.pos_y);
     
-    update_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
-    update_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
-
-
-    window = setup_opengl();
-
-    int objects_count = 2;
+    update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
+    update_quad_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
+    window = setup_opengl(resolution_x, resolution_y, key_callback);
+    
+    
+    int objects_count = 3;
     GLuint VBO[objects_count], VAO[objects_count];
     glGenBuffers(objects_count, VBO);
     glGenVertexArrays(objects_count, VAO);
@@ -79,8 +78,8 @@ int main(void){
     while (!glfwWindowShouldClose(window)){
         process_movement(&player, &food, 0.002, resolution_ratio);
 
-        update_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
-        update_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
+        update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
+        update_quad_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
 
         glUseProgram(shaderProgram);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -190,7 +189,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
 
 
 
-void update_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b) {
+void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b) {
     // Vertex 1 (bottom-left)
     vertices[0] = posX - size; vertices[1] = (posY - size) * resolution_ratio; vertices[2] = 0.0f;
     vertices[3] = r; vertices[4] = g; vertices[5] = b;
@@ -217,35 +216,6 @@ void update_vertices(float vertices[], float posX, float posY, float size, float
 }
 
 
-
-
-GLFWwindow* setup_opengl(){
-    GLFWwindow* window;
-    if (!glfwInit()){exit(-1);}
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        window = glfwCreateWindow(resolution_x, resolution_y, "Snek", NULL, NULL);
-        if (!window){
-            glfwTerminate();
-            exit(-1);
-        }
-
-    glfwMakeContextCurrent(window);
-
-        if (glewInit() != GLEW_OK)
-        {
-            printf("Failed to initialize GLEW\n");
-            exit(-1);
-        }
-
-    glfwSetKeyCallback(window, key_callback);
-
-    return window;
-    
-}
 
 int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size) {
     if (player_x + player_size < food_x - food_size || food_x + food_size < player_x - player_size) {

@@ -63,9 +63,10 @@ int main(void){
 
     window = setup_opengl();
 
-    GLuint VBO[2], VAO[2];
-    glGenBuffers(2, VBO);
-    glGenVertexArrays(2, VAO);
+    int objects_count = 2;
+    GLuint VBO[objects_count], VAO[objects_count];
+    glGenBuffers(objects_count, VBO);
+    glGenVertexArrays(objects_count, VAO);
 
     setup_vertx_data(VBO[0], VAO[0], player.vertices, sizeof(player.vertices)/sizeof(float));
     setup_vertx_data(VBO[1], VAO[1], food.vertices, sizeof(food.vertices)/sizeof(float));

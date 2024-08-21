@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include <time.h>
 
+#define GAME_OBJECT_COUNT 3
+
 typedef struct {
     GLuint TextureID;
     int Size[2];
@@ -30,9 +32,16 @@ struct food{
 typedef struct food food;
 
 struct game{
+    int resolution_x;
+    int resolution_y;
+    float resolution_ratio;
     int score;
     int tick_counter;
     double last_time;
+    GLuint VBO[GAME_OBJECT_COUNT];
+    GLuint VAO[GAME_OBJECT_COUNT];
+    Character Characters[128];
+    GLFWwindow* window;
 };
 typedef struct game game;
 

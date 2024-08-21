@@ -11,7 +11,6 @@ int resolution_x;
 int resolution_y;
 float resolution_ratio;
 enum directional_keys key_pressed = STOP;
-int move = 0;
 int score = 0;
 
 int game_loop(){
@@ -124,9 +123,9 @@ void randomize_food_coords(food *food, snake *player){
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (action == GLFW_PRESS || action == GLFW_RELEASE) {
       if (action == GLFW_PRESS) {
-          move = 1;
+          //move = 1;
       } else {
-          move = 0;
+          //move = 0;
       }
 
         switch (key) {

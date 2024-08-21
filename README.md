@@ -11,5 +11,5 @@ Snake written in pure C using only:
 
 
 # TODO:
-- Make snake move in grid
-- Make snake grow 
+- Make snake collide with self
+- make sure food can't spawn inside snake end segments

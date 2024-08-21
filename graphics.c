@@ -236,28 +236,24 @@ void draw_player(GLuint VBO, GLuint VAO, snake *player, GLuint shaderProgram){
     glUseProgram(shaderProgram);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindVertexArray(VAO);
-    float vertices[36 * (player->snake_length)];
+    int vertex_count = player->snake_length * 36; 
+    float *vertices = malloc(sizeof(float) * vertex_count);
     int count = 0;
 
     snake *tmp = player;
-    printf("================\n");
     while (tmp != NULL){
-        printf("printinf snek at X %f, Y %f\n", tmp->pos_x, tmp->pos_y);
         for (int i = 0; i < 36 ; i++){
             vertices[count] = tmp->vertices[i];
-            printf("vertices[%d] = %f\n", count, vertices[count]);
             count++;
         }
-        
         tmp = tmp->next;
-        
     }
-    printf("================\n");
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_count, vertices, GL_DYNAMIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 6 * (player->snake_length));
-    //glDrawArrays(GL_TRIANGLES, 0, 12);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    free(vertices);
 }
 
 void draw_food(GLuint VBO, GLuint VAO, food *food, GLuint shaderProgram){

@@ -131,16 +131,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
         switch (key) {
             case GLFW_KEY_UP:
-                key_pressed = UP;
+                if (key_pressed != DOWN){ key_pressed = UP;}
+                //key_pressed = UP;
                 break;
             case GLFW_KEY_DOWN:
-                key_pressed = DOWN;
+            if (key_pressed != UP){ key_pressed = DOWN;}
+                //key_pressed = DOWN;
                 break;
             case GLFW_KEY_LEFT:
-                key_pressed = LEFT;
+                if (key_pressed != RIGHT){ key_pressed = LEFT;}
+                //key_pressed = LEFT;
                 break;
             case GLFW_KEY_RIGHT:
-                key_pressed = RIGHT;
+                if (key_pressed != LEFT){ key_pressed = RIGHT;}
+                //key_pressed = RIGHT;
                 break;
             case GLFW_KEY_ESCAPE:
                 exit(0);
@@ -204,6 +208,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
             player->pos_y = 0;
             player->pos_x = 0.05;
             wall_buffer = 0;
+            clear_snake(player);
         }
         wall_buffer += 1;
         
@@ -213,6 +218,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
             player->pos_y = 0;
             player->pos_x = 0.05;
             wall_buffer = 0;
+            clear_snake(player);
         }
         wall_buffer += 1;
         
@@ -222,6 +228,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
             player->pos_y = 0;
             player->pos_x = 0.05;
             wall_buffer = 0;
+            clear_snake(player);
         }
         wall_buffer += 1;
         
@@ -231,6 +238,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
             player->pos_y = 0;
             player->pos_x = 0.05;
             wall_buffer = 0;
+            clear_snake(player);
         }
         wall_buffer += 1;
         
@@ -296,11 +304,48 @@ int check_collision(float player_x, float player_y, float player_size, float foo
 
 snake* make_snake_node(float X, float Y){
     snake *tmp = malloc(sizeof(snake));
-    tmp->pos_x = X - 0.1f;
-    tmp->pos_y = Y - 0.1f;
+
+    switch (key_pressed) {
+        case UP:
+            tmp->pos_y = Y - 0.1f;
+            tmp->pos_x = X;
+            break;
+        case DOWN:
+            tmp->pos_y = Y + 0.1f;
+            tmp->pos_x = X;
+            break;
+        case LEFT:
+            tmp->pos_x = X + 0.1f;
+            tmp->pos_y = Y;
+            break;
+        case RIGHT:
+            tmp->pos_x = X - 0.1f;
+            tmp->pos_y = Y;
+            break;
+        default:
+            tmp->pos_x = X - 0.1f;
+            tmp->pos_y = Y - 0.1f;
+            break;
+
+    }
+
     tmp->width = 0.05f;
     tmp->next = NULL;
     return tmp;
+}
+void clear_snake(snake *player){
+    if (player == NULL){return;}
+    player->snake_length = 1;
+    score = 0;
+    if (player->next == NULL){return;}
+
+    snake *tmp = player->next;
+    player->next = NULL;
+    while (tmp !=NULL){
+        snake *tmp_forward = tmp->next;
+        free(tmp);
+        tmp = tmp_forward;
+    }
 }
 
 void add_to_snake(snake *player){
@@ -330,11 +375,31 @@ void print_snake(snake *player){
 
 void move_snake(snake *player, float x_speed, float y_speed){
     if (player == NULL){return;}
-    snake *tmp = player;
+    float prev_x = player->pos_x;
+    float prev_y = player->pos_y;
+
+    player->pos_x += x_speed;
+    player->pos_y += y_speed;
+    snake *tmp = player->next;
+
     while (tmp != NULL){
-        tmp->pos_x += x_speed;
-        tmp->pos_y += y_speed;
+        float tmp_x = tmp->pos_x;
+        float tmp_y = tmp->pos_y;
+        tmp->pos_x = prev_x;
+        tmp->pos_y = prev_y;
+        prev_x = tmp_x;
+        prev_y = tmp_y;
         tmp = tmp->next;
     }
 
 }
+// void move_snake(snake *player, float x_speed, float y_speed){
+//     if (player == NULL){return;}
+//     snake *tmp = player;
+//     while (tmp != NULL){
+//         tmp->pos_x += x_speed;
+//         tmp->pos_y += y_speed;
+//         tmp = tmp->next;
+//     }
+
+// }

@@ -43,6 +43,7 @@ snake* make_snake_node(float X, float Y);
 void add_to_snake(snake *player);
 void print_snake(snake *player);
 void move_snake(snake *player, float x_speed, float y_speed);
+void clear_snake(snake *player);
 
 int game_loop();
 void setup_game(snake *player, food *food, game *game);

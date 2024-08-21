@@ -29,9 +29,11 @@ typedef struct {
 
 GLuint compileShader(GLenum type, const char* source);
 GLuint createShaderProgram(const char* vertex_shader_source, const char* fragment_shader_source);
-void setup_vertx_data(GLuint VBO, GLuint VAO, float vertices[], int vertex_count);
+void setup_quad_vertx_data(GLuint VBO, GLuint VAO, float vertices[], int vertex_count);
 const char* load_shader_source(const char* file_path);
-void load_fonts(Character *Characters, int Characters_length);
-GLFWwindow* setup_opengl(int resolution_x, int resolution_y, int (*key_callback)(GLFWwindow*, int, int, int, int) );
+void load_fonts(Character *Characters, int Characters_length, const char *font_name);
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
+void setup_text_vertx_data(GLuint VBO, GLuint VAO);
+void RenderText(GLuint shaderProgram, const char* text, float x, float y, float scale, float color[3], int resolution_x, int resolution_y, Character Characters[], GLuint VAO, GLuint VBO);
 
 #endif

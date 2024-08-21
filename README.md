@@ -8,8 +8,21 @@ Snake written in pure C using only:
 
 
 
+# Build Instructions
+- Ubuntu (24.04)
 
+```
+sudo apt install build-essential
+sudo apt install libglew-dev
+sudo apt install libglfw3
+sudo apt install libglfw3-dev
+sudo apt install libfreetype6-dev
+sudo apt install libcglm-dev
+git clone https://github.com/tylerwight/C_snek
 
-# TODO:
-- Make snake collide with self
-- make sure food can't spawn inside snake end segments
+cd C_snek
+make
+```
+
+- Windows
+//TODO

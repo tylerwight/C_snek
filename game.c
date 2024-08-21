@@ -18,9 +18,6 @@ int game_loop(){
         glClear(GL_COLOR_BUFFER_BIT);
         glfwPollEvents();
 
-        if (game.tick_counter % 10 == 0){
-            process_movement(&player, &food, 0.1, &game);
-        }
 
         update_snake_verticies(&player, 0.0, 1.0 , 0.0, &game);
         update_food_verticies(&food, 1.0, 0.0 , 0.0, &game);
@@ -44,6 +41,9 @@ int game_loop(){
             game.tick_counter = 0;
         }
 
+        if (game.tick_counter % 10 == 0){
+            process_movement(&player, &food, 0.1, &game);
+        }
         glfwSwapBuffers(game.window);
     }
 

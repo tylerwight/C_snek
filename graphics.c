@@ -162,3 +162,33 @@ void load_fonts(Character *Characters, int Characters_length){
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 }
+
+//GLFWwindow* window, int key, int scancode, int action, int mods
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, int (*key_callback)(GLFWwindow*, int, int, int, int) ){
+    GLFWwindow* window;
+    if (!glfwInit()){exit(-1);}
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        window = glfwCreateWindow(resolution_x, resolution_y, "Snek", NULL, NULL);
+        if (!window){
+            glfwTerminate();
+            exit(-1);
+        }
+
+    glfwMakeContextCurrent(window);
+
+        if (glewInit() != GLEW_OK)
+        {
+            printf("Failed to initialize GLEW\n");
+            exit(-1);
+        }
+
+    glfwSetKeyCallback(window, key_callback);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+    return window;
+}

@@ -2,6 +2,7 @@
 #define GAME_H
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <time.h>
 
 typedef struct {
     GLuint TextureID;
@@ -27,6 +28,22 @@ struct food{
     float vertices[36];
 };
 typedef struct food food;
+
+struct game{
+    int score;
+    int tick_counter;
+    double last_time;
+};
+typedef struct game game;
+
+enum directional_keys {UP, DOWN, LEFT, RIGHT};
+int game_loop();
+void setup_game(snake *player, food *food, game *game);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void process_movement(snake *player, food *food_item, float speed, float resolution_ratio, int *score);
+void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
+int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
+void randomize_food_coords(food *food, snake *player);
 
 
 #endif

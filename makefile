@@ -5,7 +5,7 @@ CC = gcc
 TARGET = snek
 
 # Source files
-SRCS = main.c graphics.c
+SRCS = main.c graphics.c game.c
 
 # Object files
 OBJS = $(SRCS:.c=.o)

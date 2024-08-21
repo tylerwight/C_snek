@@ -41,7 +41,7 @@ GLuint createShaderProgram(const char* vertex_shader_source, const char* fragmen
     return shaderProgram;
 }
 
-void RenderText(GLuint shaderProgram, const char* text, float x, float y, float scale, float color[3], int resolution_x, int resolution_y, Character Characters[], GLuint VAO, GLuint VBO) {
+void render_text(GLuint shaderProgram, const char* text, float x, float y, float scale, float color[3], int resolution_x, int resolution_y, Character Characters[], GLuint VAO, GLuint VBO) {
     glUseProgram(shaderProgram);
     mat4 projection;
     glm_ortho(0.0f, resolution_x, 0.0f, resolution_y, -1.0f, 1.0f, projection);
@@ -252,32 +252,21 @@ void draw_food(GLuint VBO, GLuint VAO, food *food, GLuint shaderProgram){
     glBindVertexArray(0);
 }
 
-void setup_game(snake *player, food *food){
-    srand(time(NULL));
-    resolution_x = 1024;
-    resolution_y = 768;
-    resolution_ratio = (float)resolution_x / (float)resolution_y;
-    player->pos_x = 0.0f;
-    player->pos_y = 0.0f;
-    player->width = 0.05f;
-    player->snake_length = 2;
-    food->pos_x = 0.0f;
-    food->pos_y = 0.0f;
-    food->width = 0.01f;
-    randomize_food_coords(food, player);
 
-}
 
-void draw_debug_text(GLuint VBO, GLuint VAO, snake *player, food *food, GLuint shader_program, Character Characters[]){
+void draw_debug_text(GLuint VBO, GLuint VAO, snake *player, food *food, game *game, GLuint shader_program, Character Characters[]){
     float text_color[3] = {1.0f, 1.0f, 1.0f};
 
     if (DEBUG == 1){
         char playx[20];
         char playy[20];
+        char tick[20];
         sprintf(playx, "%f", player->pos_x);
         sprintf(playy, "%f", player->pos_y);
-        RenderText(shader_program, playx, 200.0f, 125.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
-        RenderText(shader_program, playy, 450.0f, 125.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
+        sprintf(tick, "%d", game->tick_counter);
+        render_text(shader_program, playx, 200.0f, 125.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
+        render_text(shader_program, playy, 450.0f, 125.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
+        render_text(shader_program, tick, 50.0f, 50.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
     }
 
 }

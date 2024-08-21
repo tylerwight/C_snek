@@ -13,6 +13,6 @@ extern const char* fragmentShaderSource;
 
 GLuint compileShader(GLenum type, const char* source);
 GLuint createShaderProgram();
-void updateVertices(float vertices[], float posX, float posY);
+
 
 #endif

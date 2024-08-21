@@ -28,9 +28,12 @@ const char* load_shader_source(const char* file_path);
 void load_fonts(Character *Characters, int Characters_length, const char *font_name);
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
 void setup_text_vertx_data(GLuint VBO, GLuint VAO);
-void render_text(GLuint shaderProgram, const char* text, float x, float y, float scale, float color[3], int resolution_x, int resolution_y, Character Characters[], GLuint VAO, GLuint VBO);
-void draw_player(GLuint VBO, GLuint VAO, snake *player, GLuint shaderProgram);
-void draw_food(GLuint VBO, GLuint VAO, food *food, GLuint shaderProgram);
-void draw_debug_text(GLuint VBO, GLuint VAO, snake *player, food *food, game *game, GLuint shader_program, Character Characters[]);
+//void render_text(GLuint shaderProgram, const char* text, float x, float y, float scale, float color[3], int resolution_x, int resolution_y, Character Characters[], GLuint VAO, GLuint VBO);
+void render_text(const char* text, float x, float y, float scale, float color[3], game *game);
+//void draw_player(GLuint VBO, GLuint VAO, snake *player, GLuint shaderProgram);
+void draw_player(snake *player, game *game);
+//void draw_food(GLuint VBO, GLuint VAO, food *food, GLuint shaderProgram);
+void draw_food(food *food, game *game);
+void draw_debug_text(snake *player, food *food, game *game);
 GLuint make_shader_program(const char vertex_source[], const char fragment_source[]); 
 #endif

@@ -1,5 +1,8 @@
 #include "graphics.h"
 
+#define PLAYER 0
+#define FOOD 1
+#define TEXT 2
 
 GLuint compileShader(GLenum type, const char* source){
     GLuint shader = glCreateShader(type);
@@ -41,21 +44,21 @@ GLuint createShaderProgram(const char* vertex_shader_source, const char* fragmen
     return shaderProgram;
 }
 
-void render_text(GLuint shaderProgram, const char* text, float x, float y, float scale, float color[3], int resolution_x, int resolution_y, Character Characters[], GLuint VAO, GLuint VBO) {
-    glUseProgram(shaderProgram);
+void render_text(const char* text, float x, float y, float scale, float color[3], game *game) {
+    glUseProgram(game->shader_program_text);
     mat4 projection;
-    glm_ortho(0.0f, resolution_x, 0.0f, resolution_y, -1.0f, 1.0f, projection);
-    GLuint projLoc = glGetUniformLocation(shaderProgram, "projection");
+    glm_ortho(0.0f, game->resolution_x, 0.0f, game->resolution_y, -1.0f, 1.0f, projection);
+    GLuint projLoc = glGetUniformLocation(game->shader_program_text, "projection");
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, (float*)projection);
 
-    GLint textColorLocation = glGetUniformLocation(shaderProgram, "textColor");
+    GLint textColorLocation = glGetUniformLocation(game->shader_program_text, "textColor");
     glUniform3f(textColorLocation, color[0], color[1], color[2]);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(VAO);
+    glBindVertexArray(game->VAO[TEXT]);
 
     for (const char* p = text; *p; p++) {
-        Character ch = Characters[*p];
+        Character ch = game->Characters[*p];
 
         float xpos = x + ch.Bearing[0] * scale;
         float ypos = y - (ch.Size[1] - ch.Bearing[1]) * scale;
@@ -74,7 +77,7 @@ void render_text(GLuint shaderProgram, const char* text, float x, float y, float
         };
         //printf("letter = %c, textureID = %c\n", *p, ch.TextureID );
         glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, game->VBO[TEXT]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -221,7 +224,6 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
             printf("Failed to initialize GLEW\n");
             exit(-1);
         }
-
     glfwSetKeyCallback(window, key_callback);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -232,10 +234,10 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
 
 
 
-void draw_player(GLuint VBO, GLuint VAO, snake *player, GLuint shaderProgram){
-    glUseProgram(shaderProgram);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindVertexArray(VAO);
+void draw_player(snake *player, game *game){
+    glUseProgram(game->shader_program_quads);
+    glBindBuffer(GL_ARRAY_BUFFER, game->VBO[PLAYER]);
+    glBindVertexArray(game->VAO[PLAYER]);
     int vertex_count = player->snake_length * 36; 
     float *vertices = malloc(sizeof(float) * vertex_count);
     int count = 0;
@@ -256,19 +258,19 @@ void draw_player(GLuint VBO, GLuint VAO, snake *player, GLuint shaderProgram){
     free(vertices);
 }
 
-void draw_food(GLuint VBO, GLuint VAO, food *food, GLuint shaderProgram){
-    glUseProgram(shaderProgram);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+void draw_food(food *food, game *game){
+    glUseProgram(game->shader_program_quads);
+    glBindBuffer(GL_ARRAY_BUFFER, game->VBO[FOOD]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(food->vertices), food->vertices);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(VAO);
+    glBindVertexArray(game->VAO[FOOD]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
 
 
 
-void draw_debug_text(GLuint VBO, GLuint VAO, snake *player, food *food, game *game, GLuint shader_program, Character Characters[]){
+void draw_debug_text(snake *player, food *food, game *game){
     float text_color[3] = {1.0f, 1.0f, 1.0f};
 
     if (DEBUG == 1){
@@ -278,9 +280,9 @@ void draw_debug_text(GLuint VBO, GLuint VAO, snake *player, food *food, game *ga
         sprintf(playx, "%f", player->pos_x);
         sprintf(playy, "%f", player->pos_y);
         sprintf(tick, "%d", game->tick_counter);
-        render_text(shader_program, playx, 200.0f, 125.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
-        render_text(shader_program, playy, 450.0f, 125.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
-        render_text(shader_program, tick, 50.0f, 50.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
+        render_text(playx, 200.0f, 125.0f, 1.0f, text_color, game);
+        render_text(playy, 450.0f, 125.0f, 1.0f, text_color, game);
+        render_text(tick, 50.0f, 50.0f, 1.0f, text_color, game);
     }
 
 }

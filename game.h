@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <time.h>
 
-#define GAME_OBJECT_COUNT 3
+ #define GAME_OBJECT_COUNT 3
 
 typedef struct {
     GLuint TextureID;
@@ -31,6 +31,8 @@ struct food{
 };
 typedef struct food food;
 
+enum directional_keys {UP, DOWN, LEFT, RIGHT, STOP};
+
 struct game{
     int resolution_x;
     int resolution_y;
@@ -42,27 +44,34 @@ struct game{
     GLuint VAO[GAME_OBJECT_COUNT];
     Character Characters[128];
     GLFWwindow* window;
+    GLuint shader_program_text;
+    GLuint shader_program_quads;
+    enum directional_keys key_pressed;
+    
 };
 typedef struct game game;
 
-enum directional_keys {UP, DOWN, LEFT, RIGHT, STOP};
 
 
-snake* make_snake_node(float X, float Y);
-void add_to_snake(snake *player);
+
+snake* make_snake_node(float X, float Y, game *game);
+void add_to_snake(snake *player, game *game);
 void print_snake(snake *player);
 void move_snake(snake *player, float x_speed, float y_speed);
-void clear_snake(snake *player);
+void clear_snake(snake *player, game *game);
 
 int game_loop();
 void setup_game(snake *player, food *food, game *game);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-void process_movement(snake *player, food *food_item, float speed, float resolution_ratio, int *score);
-void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
-void update_snake_verticies(snake *player, float r, float g, float b);
+void process_movement(snake *player, food *food_item, float speed, game *game);
+void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b, game *game);
+void update_snake_verticies(snake *player, float r, float g, float b, game *game);
+void update_food_verticies(food *food, float r, float g, float b, game *game);
+
 int check_quad_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
 int check_snake_collision(snake *player, food *food);
+int check_snake_self_collision(snake *player);
 void randomize_food_coords(food *food, snake *player);
 
 

@@ -7,7 +7,7 @@
 #define FOOD 1
 #define TEXT 2
 
-
+//
 int game_loop(){
     snake player;
     food food;

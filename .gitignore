@@ -3,3 +3,4 @@ program
 cube.c
 *.o
 snek
+.vscode

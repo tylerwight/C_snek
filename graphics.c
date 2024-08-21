@@ -55,3 +55,16 @@ GLuint createShaderProgram(){
 
     return shaderProgram;
 }
+
+
+void setup_vertx_data(GLuint VBO, GLuint VAO, float vertices[], int vertex_count){
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(float), vertices, GL_DYNAMIC_DRAW);
+    printf("vertex_count * sizeof(float) = %d\n", vertex_count * sizeof(float));
+    printf("sizeof(vertices) = %d\n", sizeof(vertices));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}

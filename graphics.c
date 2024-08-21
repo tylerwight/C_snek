@@ -1,27 +1,5 @@
 #include "graphics.h"
 
-// const char* vertexShaderSource = "#version 130\n"
-//     "in vec3 aPos;\n"
-//     "in vec3 aColor;\n"
-//     "out vec3 ourColor;\n"
-//     "void main()\n"
-//     "{\n"
-//     "    gl_Position = vec4(aPos, 1.0);\n"
-//     "    ourColor = aColor;\n"
-//     "}\0";
-
-// const char* fragmentShaderSource = "#version 130\n"
-//     "in vec3 ourColor;\n"
-//     "out vec4 FragColor;\n"
-//     "void main()\n"
-//     "{\n"
-//     "    FragColor = vec4(ourColor, 1.0);\n"
-//     "}\0";
-const char* vert_shader_quads_source;
-const char* vert_shader_text_source;
-const char* frag_shader_quads_source;
-const char* frag_shader_text_source;
-
 
 GLuint compileShader(GLenum type, const char* source){
     GLuint shader = glCreateShader(type);
@@ -250,4 +228,62 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     return window;
+}
+
+
+
+void draw_player(GLuint VBO, GLuint VAO, snake *player, GLuint shaderProgram){
+    glUseProgram(shaderProgram);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(player->vertices), player->vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void draw_food(GLuint VBO, GLuint VAO, food *food, GLuint shaderProgram){
+    glUseProgram(shaderProgram);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(food->vertices), food->vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void setup_game(snake *player, food *food){
+    srand(time(NULL));
+    resolution_x = 1024;
+    resolution_y = 768;
+    resolution_ratio = (float)resolution_x / (float)resolution_y;
+    player->pos_x = 0.0f;
+    player->pos_y = 0.0f;
+    player->width = 0.05f;
+    player->snake_length = 2;
+    food->pos_x = 0.0f;
+    food->pos_y = 0.0f;
+    food->width = 0.01f;
+    randomize_food_coords(food, player);
+
+}
+
+void draw_debug_text(GLuint VBO, GLuint VAO, snake *player, food *food, GLuint shader_program, Character Characters[]){
+    float text_color[3] = {1.0f, 1.0f, 1.0f};
+
+    if (DEBUG == 1){
+        char playx[20];
+        char playy[20];
+        sprintf(playx, "%f", player->pos_x);
+        sprintf(playy, "%f", player->pos_y);
+        RenderText(shader_program, playx, 200.0f, 125.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
+        RenderText(shader_program, playy, 450.0f, 125.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO, VBO);
+    }
+
+}
+
+GLuint make_shader_program(const char vertex_source[], const char fragment_source[]){
+    const char* vertex_shader_source = load_shader_source(vertex_source);
+    const char* fragment_shader_source = load_shader_source(fragment_source);
+    return createShaderProgram(vertex_shader_source, fragment_shader_source);
 }

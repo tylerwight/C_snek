@@ -4,37 +4,22 @@
 #include <stdlib.h>
 #include <time.h>
 #include "graphics.h"
-
+#include "game.h"
 
 #define TARGET_FPS 60
+#define OBJECT_COUNT 3
+#define PLAYER 0
+#define FOOD 1
+#define TEXT 2
 
-struct snake{
-    float pos_x;
-    float pos_y;
-    float width;
-    int snake_length;
-    float vertices[36];
-
-};
-typedef struct snake snake;
-
-struct food{
-    float pos_x;
-    float pos_y;
-    float width;
-    float vertices[36];
-};
-typedef struct food food;
-
-enum render_objects {PLAYER, FOOD, TEXT};
-
-// int resolution_x;
-// int resolution_y;
+int resolution_x;
+int resolution_y;
 float resolution_ratio;
 int upPressed = 0;
 int downPressed = 0;
 int leftPressed = 0;
 int rightPressed = 0;
+int score = 0;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void process_movement(snake *player, food *food_item, float speed, float resolution_ratio, int *score);
@@ -49,82 +34,39 @@ int main(void){
     snake player;
     food food;
     Character Characters[128];
-    const char* fragment_shader_quads_source = load_shader_source("fragment_shader_quads.glsl");
-    const char* vertex_shader_quads_source = load_shader_source("vertex_shader_quads.glsl");
-    const char* fragment_shader_text_source = load_shader_source("fragment_shader_text.glsl");
-    const char* vertex_shader_text_source = load_shader_source("vertex_shader_text.glsl");
-    srand(time(NULL));
-    int resolution_x = 1024;
-    int resolution_y = 768;
-    resolution_ratio = (float)resolution_x / (float)resolution_y;
-    player.pos_x = 0.0f;
-    player.pos_y = 0.0f;
-    player.width = 0.05f;
-    player.snake_length = 2;
-    food.pos_x = 0.0f;
-    food.pos_y = 0.0f;
-    food.width = 0.01f;
-    int score = 0;
-    randomize_food_coords(&food, &player);
-    
-    update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
-    update_quad_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
+    setup_game(&player, &food);
     window = setup_opengl(resolution_x, resolution_y, key_callback);
     load_fonts(Characters, 128, "Montserrat.ttf");
-    
-    int objects_count = 3;
-    GLuint VBO[objects_count], VAO[objects_count];
-    
-    glGenBuffers(objects_count, VBO);
-    glGenVertexArrays(objects_count, VAO);
 
-    setup_quad_vertx_data(VBO[0], VAO[0], player.vertices, sizeof(player.vertices)/sizeof(float));
-    setup_quad_vertx_data(VBO[1], VAO[1], food.vertices, sizeof(food.vertices)/sizeof(float));
-    setup_text_vertx_data(VBO[2], VAO[2]);
-
-    GLuint shader_program_quads = createShaderProgram(vertex_shader_quads_source, fragment_shader_quads_source);
-    GLuint shader_program_text = createShaderProgram(vertex_shader_text_source, fragment_shader_text_source);
+    GLuint VBO[OBJECT_COUNT], VAO[OBJECT_COUNT];
+    glGenBuffers(OBJECT_COUNT, VBO);
+    glGenVertexArrays(OBJECT_COUNT, VAO);
+    setup_quad_vertx_data(VBO[PLAYER], VAO[PLAYER], player.vertices, sizeof(player.vertices)/sizeof(float));
+    setup_quad_vertx_data(VBO[FOOD], VAO[FOOD], food.vertices, sizeof(food.vertices)/sizeof(float));
+    setup_text_vertx_data(VBO[TEXT], VAO[TEXT]);
+    GLuint shader_program_quads = make_shader_program("vertex_shader_quads.glsl","fragment_shader_quads.glsl");
+    GLuint shader_program_text = make_shader_program("vertex_shader_text.glsl","fragment_shader_text.glsl");
+    //
 
     double lasttime = glfwGetTime();
-    while (!glfwWindowShouldClose(window)){
-        process_movement(&player, &food, 0.01, resolution_ratio, &score);
+    while (!glfwWindowShouldClose(window)){ // game loop
+        glClear(GL_COLOR_BUFFER_BIT);
         update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
         update_quad_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
+        process_movement(&player, &food, 0.01, resolution_ratio, &score);
+
         char score_text[10];
         sprintf(score_text, "%d", score);
-
-        glUseProgram(shader_program_quads);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        //player
-        glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(player.vertices), player.vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(VAO[0]);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
         
-        //food
-        glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(food.vertices), food.vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(VAO[1]);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-
-        //text
-        // char playx[20];
-        // char playy[20];
-        // sprintf(playx, "%f", player.pos_x);
-        // sprintf(playy, "%f", player.pos_y);
-        //RenderText(shader_program_text, playx, 200.0f, 125.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
-        //RenderText(shader_program_text, playy, 450.0f, 125.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
-        float color[3] = {0.0f, 1.0f, 1.0f};
-        RenderText(shader_program_text, "Score: ", 25.0f, 725.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
-        RenderText(shader_program_text, score_text, 200.0f, 725.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
+        draw_player(VBO[PLAYER], VAO[PLAYER], &player, shader_program_quads);
+        draw_food(VBO[FOOD], VAO[FOOD], &food, shader_program_quads);
+        draw_debug_text(VBO[TEXT], VAO[TEXT], &player, &food, shader_program_text, Characters);
+        float text_color[3] = {0.0f, 1.0f, 1.0f};
+        RenderText(shader_program_text, "Score: ", 25.0f, 725.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO[TEXT], VBO[TEXT]);
+        RenderText(shader_program_text, score_text, 200.0f, 725.0f, 1.0f, text_color, resolution_x, resolution_y, Characters, VAO[TEXT], VBO[TEXT]);
 
         while (glfwGetTime() < lasttime + 1.0/TARGET_FPS) {
-            //
+            //do nothing if faster than 60fps until it is FPS
         }
         lasttime += 1.0/TARGET_FPS;
 

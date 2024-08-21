@@ -12,19 +12,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "game.h"
 
-extern const char* vert_shader_quads_source;
-extern const char* vert_shader_text_source;
-extern const char* frag_shader_quads_source;
-extern const char* frag_shader_text_source;
-
-typedef struct {
-    GLuint TextureID;
-    int Size[2];
-    int Bearing[2];
-    unsigned int Advance;
-} Character;
-
+#define DEBUG 1
+// extern const char* vert_shader_quads_source;
+// extern const char* vert_shader_text_source;
+// extern const char* frag_shader_quads_source;
+// extern const char* frag_shader_text_source;
+extern int resolution_x;
+extern int resolution_y;
+extern float resolution_ratio;
 
 
 GLuint compileShader(GLenum type, const char* source);
@@ -35,5 +32,9 @@ void load_fonts(Character *Characters, int Characters_length, const char *font_n
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
 void setup_text_vertx_data(GLuint VBO, GLuint VAO);
 void RenderText(GLuint shaderProgram, const char* text, float x, float y, float scale, float color[3], int resolution_x, int resolution_y, Character Characters[], GLuint VAO, GLuint VBO);
-
+void draw_player(GLuint VBO, GLuint VAO, snake *player, GLuint shaderProgram);
+void draw_food(GLuint VBO, GLuint VAO, food *food, GLuint shaderProgram);
+void setup_game(snake *player, food *food);
+void draw_debug_text(GLuint VBO, GLuint VAO, snake *player, food *food, GLuint shader_program, Character Characters[]);
+GLuint make_shader_program(const char vertex_source[], const char fragment_source[]); 
 #endif

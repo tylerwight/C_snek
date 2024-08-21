@@ -10,7 +10,7 @@
 int resolution_x;
 int resolution_y;
 float resolution_ratio;
-enum directional_keys key_pressed;
+enum directional_keys key_pressed = STOP;
 int move = 0;
 int score = 0;
 
@@ -43,10 +43,10 @@ int game_loop(){
             //print_snake(&player);
         }
         if (game.tick_counter % 100 == 0){
-            printf("\n\n");
-            printf("snake length = %d\n", player.snake_length);
-            print_snake(&player);
-            printf("\n\n");
+            // printf("\n\n");
+            // printf("snake length = %d\n", player.snake_length);
+            // print_snake(&player);
+            // printf("\n\n");
         }
 
         //update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
@@ -112,7 +112,7 @@ void setup_game(snake *player, food *food, game *game){
 
 void randomize_food_coords(food *food, snake *player){
     float random_number = (float)rand() / RAND_MAX;
-    while (check_collision(player->pos_x, player->pos_y, player->width, food->pos_x, food->pos_y, food->width * resolution_ratio)){
+    while (check_snake_collision(player, food)){
         food->pos_x = -0.7f + random_number * (0.7f - (-0.7f));
         random_number = (float)rand() / RAND_MAX;
         food->pos_y = -0.7f + random_number * (0.7f - (-0.7f));
@@ -163,10 +163,16 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
     static int last_buffer = 0;
     static int count = 0;
 
+    if (check_snake_self_collision(player)){
+            player->pos_y = 0;
+            player->pos_x = 0.05;
+        clear_snake(player);
+    }
+
     if (key_pressed == UP && (player_ymax < 1.0f)) {
         //player->pos_y += speed;
         move_snake(player, 0.0f, speed);
-        if (check_collision(player->pos_x, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
             *score += 1;  
             player->snake_length += 1;   
@@ -176,7 +182,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
     if (key_pressed == DOWN && (player_ymin > -1.0f)) {
         //player->pos_y -= speed;
         move_snake(player, 0.0f, -speed);
-        if (check_collision(player->pos_x, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
             *score += 1;
             player->snake_length += 1;   
@@ -186,7 +192,7 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
     if (key_pressed == LEFT && (player_xmin > -1.0f)) {
         //player->pos_x -= speed;
         move_snake(player, -speed, 0.0f);
-        if (check_collision(player->pos_x, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
             *score += 1;
             player->snake_length += 1;   
@@ -195,13 +201,15 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
     }
     if (key_pressed == RIGHT && (player_xmax < 1.0f)) {
         move_snake(player, +speed, 0.0f);
-        if (check_collision(player->pos_x, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
             *score += 1;
             player->snake_length += 1;   
             add_to_snake(player);   
         }
     }
+
+
 
     if ((player->pos_y > 0.69 && player->pos_y < 0.71) && key_pressed == UP){
         if (wall_buffer >= 1){
@@ -291,7 +299,7 @@ void update_quad_vertices(float vertices[], float posX, float posY, float size, 
 
 
 
-int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size) {
+int check_quad_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size) {
     if (player_x + player_size < food_x - food_size || food_x + food_size < player_x - player_size) {
         return 0;
     }
@@ -300,6 +308,35 @@ int check_collision(float player_x, float player_y, float player_size, float foo
     }
 
     return 1;
+}
+
+
+int check_snake_collision(snake *player, food *food) {
+    if (player == NULL){return -1;}
+
+    snake *tmp = player;
+    while (tmp != NULL){
+        if (check_quad_collision(tmp->pos_x, tmp->pos_y, tmp->width, food->pos_x, food->pos_y, food->width)){
+            return 1;
+        }
+        tmp = tmp->next;
+    }
+
+    return 0;
+}
+
+int check_snake_self_collision(snake *player) {
+    if (player == NULL || player->next == NULL || player->next->next == NULL){return 0;}
+    snake *head = player;
+    snake *body = player->next->next;
+    while (body != NULL){
+        if (check_quad_collision(body->pos_x, body->pos_y, body->width-0.01, head->pos_x, head->pos_y, head->width-0.01)){
+            return 1;
+        }
+        body = body->next;
+    }
+
+    return 0;
 }
 
 snake* make_snake_node(float X, float Y){
@@ -336,12 +373,14 @@ snake* make_snake_node(float X, float Y){
 void clear_snake(snake *player){
     if (player == NULL){return;}
     player->snake_length = 1;
+    key_pressed = STOP;
     score = 0;
     if (player->next == NULL){return;}
 
-    snake *tmp = player->next;
-    player->next = NULL;
-    while (tmp !=NULL){
+    
+    snake *tmp = player->next;// set tmp to 2nd segment of snake to keep track of it
+    player->next = NULL;// set head of snake to point to nothing (making it a 1 segment snake)
+    while (tmp !=NULL){ // free the memory for whole snake from 2nd segmant forawrd
         snake *tmp_forward = tmp->next;
         free(tmp);
         tmp = tmp_forward;
@@ -366,8 +405,8 @@ void print_snake(snake *player){
         return;
     }
     while (tmp != NULL){
-        printf("SNAKE #%d\n", count);
-        printf("X %f\n Y %f\n W %f\n", tmp->pos_x, tmp->pos_y, tmp->width);
+        // printf("SNAKE #%d\n", count);
+        // printf("X %f\n Y %f\n W %f\n", tmp->pos_x, tmp->pos_y, tmp->width);
         count++;
         tmp = tmp->next;
     }
@@ -393,13 +432,3 @@ void move_snake(snake *player, float x_speed, float y_speed){
     }
 
 }
-// void move_snake(snake *player, float x_speed, float y_speed){
-//     if (player == NULL){return;}
-//     snake *tmp = player;
-//     while (tmp != NULL){
-//         tmp->pos_x += x_speed;
-//         tmp->pos_y += y_speed;
-//         tmp = tmp->next;
-//     }
-
-// }

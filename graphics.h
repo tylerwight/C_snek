@@ -14,7 +14,7 @@
 #include <string.h>
 #include "game.h"
 
-#define DEBUG 1
+#define DEBUG 0
 extern int resolution_x;
 extern int resolution_y;
 extern float resolution_ratio;

@@ -18,6 +18,7 @@
 extern int resolution_x;
 extern int resolution_y;
 extern float resolution_ratio;
+//tmp
 
 
 GLuint compileShader(GLenum type, const char* source);

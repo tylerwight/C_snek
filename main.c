@@ -5,6 +5,9 @@
 #include <time.h>
 #include "graphics.h"
 
+
+#define TARGET_FPS 60
+
 struct snake{
     float pos_x;
     float pos_y;
@@ -71,6 +74,7 @@ int main(void){
     
     int objects_count = 3;
     GLuint VBO[objects_count], VAO[objects_count];
+    
     glGenBuffers(objects_count, VBO);
     glGenVertexArrays(objects_count, VAO);
 
@@ -81,8 +85,9 @@ int main(void){
     GLuint shader_program_quads = createShaderProgram(vertex_shader_quads_source, fragment_shader_quads_source);
     GLuint shader_program_text = createShaderProgram(vertex_shader_text_source, fragment_shader_text_source);
 
+    double lasttime = glfwGetTime();
     while (!glfwWindowShouldClose(window)){
-        process_movement(&player, &food, 0.002, resolution_ratio, &score);
+        process_movement(&player, &food, 0.01, resolution_ratio, &score);
         update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
         update_quad_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
         char score_text[10];
@@ -108,10 +113,20 @@ int main(void){
         glBindVertexArray(0);
 
         //text
+        // char playx[20];
+        // char playy[20];
+        // sprintf(playx, "%f", player.pos_x);
+        // sprintf(playy, "%f", player.pos_y);
+        //RenderText(shader_program_text, playx, 200.0f, 125.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
+        //RenderText(shader_program_text, playy, 450.0f, 125.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
         float color[3] = {0.0f, 1.0f, 1.0f};
         RenderText(shader_program_text, "Score: ", 25.0f, 725.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
         RenderText(shader_program_text, score_text, 200.0f, 725.0f, 1.0f, color, resolution_x, resolution_y, Characters, VAO[2], VBO[2]);
 
+        while (glfwGetTime() < lasttime + 1.0/TARGET_FPS) {
+            //
+        }
+        lasttime += 1.0/TARGET_FPS;
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -169,7 +184,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void process_movement(snake *player, food *food_item, float speed, float resolution_ratio, int *score) {
     
     if (upPressed && ((player->pos_y + player->width) * resolution_ratio) < 1.0f) {
-        if (!check_collision(player->pos_x, player->pos_y + speed, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        if (!check_collision(player->pos_x, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        //if (!check_collision(player->pos_x, player->pos_y + speed, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
             player->pos_y += speed;
         } else{
             randomize_food_coords(food_item, player);
@@ -177,7 +193,8 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
         }
     }
     if (downPressed && ((player->pos_y - player->width) * resolution_ratio) > -1.0f) {
-        if (!check_collision(player->pos_x, player->pos_y - speed, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        if (!check_collision(player->pos_x, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        //if (!check_collision(player->pos_x, player->pos_y - speed, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
             player->pos_y -= speed;
         } else{
             randomize_food_coords(food_item, player);
@@ -185,7 +202,8 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
         }
     }
     if (leftPressed && (player->pos_x - player->width) > -1.0f) {
-        if (!check_collision(player->pos_x - speed, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        if (!check_collision(player->pos_x, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        //if (!check_collision(player->pos_x - speed, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
             player->pos_x -= speed;
         } else{
             randomize_food_coords(food_item, player);
@@ -193,7 +211,8 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
         }
     }
     if (rightPressed && (player->pos_x + player->width) < 1.0f) {
-        if (!check_collision(player->pos_x + speed, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        if (!check_collision(player->pos_x, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
+        //if (!check_collision(player->pos_x + speed, player->pos_y, player->width, food_item->pos_x, food_item->pos_y, food_item->width)) {
             player->pos_x += speed;
         } else{
             randomize_food_coords(food_item, player);

@@ -49,7 +49,8 @@ int game_loop(){
             printf("\n\n");
         }
 
-        update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
+        //update_quad_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
+        update_snake_verticies(&player, 0.0, 1.0 , 0.0);
         update_quad_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
         
 
@@ -245,7 +246,14 @@ void process_movement(snake *player, food *food_item, float speed, float resolut
     last_buffer = wall_buffer;
 }
 
-
+void update_snake_verticies(snake *player, float r, float g, float b){
+    if (player == NULL){return;}
+    snake *tmp = player;
+    while (tmp != NULL){
+        update_quad_vertices(tmp->vertices, tmp->pos_x, tmp->pos_y, tmp->width, r, g, b);
+        tmp = tmp->next;
+    }
+}
 
 void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b) {
     // Vertex 1 (bottom-left)
@@ -290,6 +298,7 @@ snake* make_snake_node(float X, float Y){
     snake *tmp = malloc(sizeof(snake));
     tmp->pos_x = X - 0.1f;
     tmp->pos_y = Y - 0.1f;
+    tmp->width = 0.05f;
     tmp->next = NULL;
     return tmp;
 }

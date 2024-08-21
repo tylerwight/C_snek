@@ -50,6 +50,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 void process_movement(snake *player, food *food_item, float speed, float resolution_ratio, int *score);
 void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
+void update_snake_verticies(snake *player, float r, float g, float b);
 int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
 void randomize_food_coords(food *food, snake *player);
 

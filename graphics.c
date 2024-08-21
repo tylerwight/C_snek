@@ -10,7 +10,6 @@ const char* vertexShaderSource = "#version 130\n"
     "    ourColor = aColor;\n"
     "}\0";
 
-// Fragment Shader source code
 const char* fragmentShaderSource = "#version 130\n"
     "in vec3 ourColor;\n"
     "out vec4 FragColor;\n"
@@ -21,7 +20,6 @@ const char* fragmentShaderSource = "#version 130\n"
 
 
 
-// Function to compile a shader
 GLuint compileShader(GLenum type, const char* source){
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, NULL);
@@ -38,7 +36,6 @@ GLuint compileShader(GLenum type, const char* source){
     return shader;
 }
 
-// Function to create a shader program
 GLuint createShaderProgram(){
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);

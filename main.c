@@ -32,7 +32,6 @@ int leftPressed = 0;
 int rightPressed = 0;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-//void process_movement(float *player_x, float *player_y, float food_x, float food_y, float speed, float player_size, float food_size);
 void process_movement(snake *player_snake, food *food_item, float speed, float resolution_ratio);
 void update_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b);
 int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);
@@ -75,8 +74,6 @@ int main(void){
 
     while (!glfwWindowShouldClose(window)){
         process_movement(&player, &food, 0.002, resolution_ratio);
-        //process_movement(&player.pos_x, &player.pos_y, food.pos_x, food.pos_y, 0.001, player.width, food.width);
-        // void process_movement(float *player_x, float *player_y, float *food_x, float *food_y, float speed, float player_size, float food_size);
 
         update_vertices(player.vertices, player.pos_x, player.pos_y, player.width, 0.0, 1.0 , 0.0);
         update_vertices(food.vertices, food.pos_x, food.pos_y, food.width, 1.0, 0.0 , 0.0);
@@ -155,30 +152,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-
-// void process_movement(float *player_x, float *player_y, float food_x, float food_y, float speed, float player_size, float food_size) {  
-      
-//     if (upPressed && ((*player_y + player_size) * resolution_ratio) < 1.0f) {
-//         if (!check_collision(*player_x, *player_y + speed, player_size, food_x, food_y, food_size * resolution_ratio)) {
-//             *player_y += speed;
-//         }
-//     }
-//     if (downPressed && ((*player_y - player_size) * resolution_ratio) > -1.0f) {
-//         if (!check_collision(*player_x, *player_y - speed, player_size, food_x, food_y, food_size * resolution_ratio)) {
-//             *player_y -= speed;
-//         }
-//     }
-//     if (leftPressed && (*player_x - player_size) > -1.0f) {
-//         if (!check_collision(*player_x - speed, *player_y, player_size, food_x, food_y, food_size)) {
-//             *player_x -= speed;
-//         }
-//     }
-//     if (rightPressed && (*player_x + player_size) < 1.0f) {
-//         if (!check_collision(*player_x + speed, *player_y, player_size, food_x, food_y, food_size)) {
-//             *player_x += speed;
-//         }
-//     }
-// }
 void process_movement(snake *player, food *food_item, float speed, float resolution_ratio) {
     
     if (upPressed && ((player->pos_y + player->width) * resolution_ratio) < 1.0f) {
@@ -271,16 +244,12 @@ GLFWwindow* setup_opengl(){
 }
 
 int check_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size) {
-
     if (player_x + player_size < food_x - food_size || food_x + food_size < player_x - player_size) {
         return 0;
     }
-    
-    // Check if one quad is above the other
     if (player_y + player_size < food_y - food_size || food_y + food_size < player_y - player_size) {
         return 0;
     }
-    
-    // If neither of the above cases are true, the quads are colliding
+
     return 1;
 }

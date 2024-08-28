@@ -2,5 +2,5 @@ a
 program
 cube.c
 *.o
-snek*
+snek
 .vscode

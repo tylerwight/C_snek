@@ -1,2 +1,2 @@
 * linguist-vendored
-stb_image.h linguist-vendored=false
+*.c linguist-vendored=false

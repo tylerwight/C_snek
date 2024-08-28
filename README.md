@@ -37,8 +37,10 @@ pacman -S mingw-w64-ucrt-x86_64-zlib
 pacman -S mingw-w64-ucrt-x86_64-harfbuzz
 pacman -S mingw-w64-ucrt-x86_64-bzip2
 pacman -S mingw-w64-ucrt-x86_64-graphite2
+pacman -S git
 
-pacman -S pkg-config
-pkg-config.exe --cflags freetype2  //get includes for freetype to put in makefile
--I/ucrt64/include/freetype2 -I/ucrt64/include/libpng16 -I/ucrt64/include/harfbuzz -I/ucrt64/include/glib-2.0 -I/ucrt64/lib/glib-2.0/include
+git clone https://github.com/tylerwight/C_snek
+
+cd C_snek
+make
 ```

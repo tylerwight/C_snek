@@ -232,37 +232,67 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
     return window;
 }
 
-
-
 void draw_player(snake *player, game *game){
     glUseProgram(game->shader_program_quads);
     glBindBuffer(GL_ARRAY_BUFFER, game->VBO[PLAYER]);
     glBindVertexArray(game->VAO[PLAYER]);
     int vertex_count = player->snake_length * 36; 
     float *vertices = malloc(sizeof(float) * vertex_count);
-    glBindTexture(GL_TEXTURE_2D, player->texture);
+    
     int count = 0;
 
     snake *tmp = player;
     while (tmp != NULL){
-        for (int i = 0; i < 36 ; i++){
-            vertices[count] = tmp->vertices[i];
-            count++;
+        if (tmp == player){
+            glBindTexture(GL_TEXTURE_2D, player->texture_head);
+        } else if (tmp == player->next){
+            glBindTexture(GL_TEXTURE_2D, player->texture_body1);
+        } else{
+            glBindTexture(GL_TEXTURE_2D, player->texture_body2);
         }
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 36, tmp->vertices, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         tmp = tmp->next;
     }
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_count, vertices, GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_TRIANGLES, 0, 6 * (player->snake_length));
-    //glDrawElements(GL_TRIANGLES, 6 * (player->snake_length), GL_UNSIGNED_INT, 0);
+    
+    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     free(vertices);
 }
+// void draw_player(snake *player, game *game){
+//     glUseProgram(game->shader_program_quads);
+//     glBindBuffer(GL_ARRAY_BUFFER, game->VBO[PLAYER]);
+//     glBindVertexArray(game->VAO[PLAYER]);
+//     int vertex_count = player->snake_length * 36; 
+//     float *vertices = malloc(sizeof(float) * vertex_count);
+//     glBindTexture(GL_TEXTURE_2D, player->texture_head);
+//     int count = 0;
+
+//     snake *tmp = player;
+//     while (tmp != NULL){
+//         for (int i = 0; i < 36 ; i++){
+//             vertices[count] = tmp->vertices[i];
+//             count++;
+//         }
+//         tmp = tmp->next;
+//     }
+
+//     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_count, vertices, GL_DYNAMIC_DRAW);
+//     glDrawArrays(GL_TRIANGLES, 0, 6 * (player->snake_length));
+//     //glDrawElements(GL_TRIANGLES, 6 * (player->snake_length), GL_UNSIGNED_INT, 0);
+//     glBindBuffer(GL_ARRAY_BUFFER, 0);
+//     glBindVertexArray(0);
+//     free(vertices);
+// }
+
+
 
 void draw_food(food *food, game *game){
     glUseProgram(game->shader_program_quads);
     glBindBuffer(GL_ARRAY_BUFFER, game->VBO[FOOD]);
+    glBindTexture(GL_TEXTURE_2D, food->texture);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(food->vertices), food->vertices);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(game->VAO[FOOD]);

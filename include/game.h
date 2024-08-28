@@ -11,6 +11,10 @@
 
  #define GAME_OBJECT_COUNT 3
 
+
+enum direction {UP, DOWN, LEFT, RIGHT, STOP};
+
+
 typedef struct {
     GLuint TextureID;
     int Size[2];
@@ -25,7 +29,10 @@ struct snake{
     int snake_length;
     float vertices[36];
     struct snake *next;
-    GLuint texture;
+    GLuint texture_head;
+    GLuint texture_body1;
+    GLuint texture_body2;
+    enum direction facing;
 };
 typedef struct snake snake;
 
@@ -34,10 +41,11 @@ struct food{
     float pos_y;
     float width;
     float vertices[36];
+    GLuint texture;
 };
 typedef struct food food;
 
-enum directional_keys {UP, DOWN, LEFT, RIGHT, STOP};
+
 
 struct game{
     int resolution_x;
@@ -52,7 +60,7 @@ struct game{
     GLFWwindow* window;
     GLuint shader_program_text;
     GLuint shader_program_quads;
-    enum directional_keys key_pressed;
+    enum direction key_pressed;
     
 };
 typedef struct game game;
@@ -74,6 +82,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void process_movement(snake *player, food *food_item, float speed, game *game);
 void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b, game *game);
 void update_snake_verticies(snake *player, float r, float g, float b, game *game);
+void rotate_snake_texture(snake *player, game *game);
 void update_food_verticies(food *food, float r, float g, float b, game *game);
 
 int check_quad_collision(float player_x, float player_y, float player_size, float food_x, float food_y, float food_size);

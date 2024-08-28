@@ -77,9 +77,10 @@ void setup_game(snake *player, food *food, game *game){
     player->width = 0.05f;
     player->snake_length = 1;
     player->next = NULL;
+    player->facing = DOWN;
     food->pos_x = 0.0f;
     food->pos_y = 0.0f;
-    food->width = 0.01f;
+    food->width = 0.02f;
     randomize_food_coords(food, player);
 
     game->window = setup_opengl(game->resolution_x, game->resolution_y, key_callback);
@@ -100,8 +101,8 @@ void setup_game(snake *player, food *food, game *game){
 }
 
 void load_textures(snake *player, food *food, game *game){
-    glGenTextures(1, &(player->texture));
-    glBindTexture(GL_TEXTURE_2D, player->texture);
+    glGenTextures(1, &(player->texture_head));
+    glBindTexture(GL_TEXTURE_2D, player->texture_head);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -109,6 +110,70 @@ void load_textures(snake *player, food *food, game *game){
     int width, height, nrChannels;
     //nrChannels = 3;
     unsigned char *data = stbi_load("assets/snek_head.png", &width, &height, &nrChannels, 0);
+    if (data){
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        printf("Texture loaded successfully: %d x %d, channels: %d\n", width, height, nrChannels);
+
+    }else{
+        printf("Failed to load texture\n");
+    }
+    stbi_image_free(data);
+
+
+    glGenTextures(1, &(player->texture_body1));
+    glBindTexture(GL_TEXTURE_2D, player->texture_body1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //int width, height, nrChannels;
+    //nrChannels = 3;
+    data = stbi_load("assets/snek_body1.png", &width, &height, &nrChannels, 0);
+    if (data){
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        printf("Texture loaded successfully: %d x %d, channels: %d\n", width, height, nrChannels);
+
+    }else{
+        printf("Failed to load texture\n");
+    }
+    stbi_image_free(data);
+
+
+    glGenTextures(1, &(player->texture_body2));
+    glBindTexture(GL_TEXTURE_2D, player->texture_body2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //int width, height, nrChannels;
+    //nrChannels = 3;
+    data = stbi_load("assets/snek_body2.png", &width, &height, &nrChannels, 0);
+    if (data){
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        printf("Texture loaded successfully: %d x %d, channels: %d\n", width, height, nrChannels);
+
+    }else{
+        printf("Failed to load texture\n");
+    }
+    stbi_image_free(data);
+
+
+
+    glGenTextures(1, &(food->texture));
+    glBindTexture(GL_TEXTURE_2D, food->texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //int width, height, nrChannels;
+    //nrChannels = 3;
+    data = stbi_load("assets/food.png", &width, &height, &nrChannels, 0);
     if (data){
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
@@ -184,6 +249,7 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
     if (game->key_pressed == UP && (player_ymax < 1.0f)) {
         //player->pos_y += speed;
         move_snake(player, 0.0f, speed);
+        player->facing = UP;
         if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
             game->score += 1;  
@@ -194,6 +260,7 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
     if (game->key_pressed == DOWN && (player_ymin > -1.0f)) {
         //player->pos_y -= speed;
         move_snake(player, 0.0f, -speed);
+        player->facing = DOWN;
         if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
             game->score += 1;
@@ -204,6 +271,7 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
     if (game->key_pressed == LEFT && (player_xmin > -1.0f)) {
         //player->pos_x -= speed;
         move_snake(player, -speed, 0.0f);
+        player->facing = LEFT;
         if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
             game->score += 1;
@@ -213,6 +281,7 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
     }
     if (game->key_pressed == RIGHT && (player_xmax < 1.0f)) {
         move_snake(player, +speed, 0.0f);
+        player->facing = RIGHT;
         if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
             game->score += 1;
@@ -279,6 +348,7 @@ void update_snake_verticies(snake *player, float r, float g, float b, game *game
     snake *tmp = player;
     while (tmp != NULL){
         update_quad_vertices(tmp->vertices, tmp->pos_x, tmp->pos_y, tmp->width, r, g, b, game);
+        rotate_snake_texture(tmp, game);
         tmp = tmp->next;
     }
 }
@@ -286,30 +356,78 @@ void update_food_verticies(food *food, float r, float g, float b, game *game){
         update_quad_vertices(food->vertices, food->pos_x, food->pos_y, food->width, r, g , b, game);
 }
 
+void rotate_snake_texture(snake *player, game *game){
+    switch (player->facing) {
+        case UP:
+            player->vertices[3] = 1.0f; player->vertices[4] = 1.0f;// Vertex 1 (bottom-left)
+            player->vertices[9] = 0.0f; player->vertices[10] = 1.0f; // Vertex 2 (bottom-right)
+            player->vertices[15] = 0.0f; player->vertices[16] = 0.0f; // Vertex 3 (top-right)
+            player->vertices[21] = 0.0f; player->vertices[22] = 0.0f; // Vertex 4 (top-right)
+            player->vertices[27] = 1.0f; player->vertices[28] = 0.0f; // Vertex 5 (top-left)
+            player->vertices[33] = 1.0f; player->vertices[34] = 1.0f; // Vertex 6 (bottom-left)
+            break;
+        case DOWN:
+            player->vertices[3] = 0.0f; player->vertices[4] = 0.0f;// Vertex 1 (bottom-left)
+            player->vertices[9] = 1.0f; player->vertices[10] = 0.0f; // Vertex 2 (bottom-right)
+            player->vertices[15] = 1.0f; player->vertices[16] = 1.0f; // Vertex 3 (top-right)
+            player->vertices[21] = 1.0f; player->vertices[22] = 1.0f; // Vertex 4 (top-right)
+            player->vertices[27] = 0.0f; player->vertices[28] = 1.0f; // Vertex 5 (top-left)
+            player->vertices[33] = 0.0f; player->vertices[34] = 0.0f; // Vertex 6 (bottom-left)
+            break;
+        case RIGHT:
+            player->vertices[3] = 0.0f; player->vertices[4] = 1.0f;// Vertex 1 (bottom-left)
+            player->vertices[9] = 0.0f; player->vertices[10] = 0.0f; // Vertex 2 (bottom-right)
+            player->vertices[15] = 1.0f; player->vertices[16] = 0.0f; // Vertex 3 (top-right)
+            player->vertices[21] = 1.0f; player->vertices[22] = 0.0f; // Vertex 4 (top-right)
+            player->vertices[27] = 1.0f; player->vertices[28] = 1.0f; // Vertex 5 (top-left)
+            player->vertices[33] = 0.0f; player->vertices[34] = 1.0f; // Vertex 6 (bottom-left)
+            break;
+        case LEFT:
+            player->vertices[3] = 1.0f; player->vertices[4] = 0.0f;// Vertex 1 (bottom-left)
+            player->vertices[9] = 1.0f; player->vertices[10] = 1.0f; // Vertex 2 (bottom-right)
+            player->vertices[15] = 0.0f; player->vertices[16] = 1.0f; // Vertex 3 (top-right)
+            player->vertices[21] = 0.0f; player->vertices[22] = 1.0f; // Vertex 4 (top-right)
+            player->vertices[27] = 0.0f; player->vertices[28] = 0.0f; // Vertex 5 (top-left)
+            player->vertices[33] = 1.0f; player->vertices[34] = 0.0f; // Vertex 6 (bottom-left)
+            break;
+        default:
+            player->vertices[3] = 0.0f; player->vertices[4] = 0.0f;// Vertex 1 (bottom-left)
+            player->vertices[9] = 1.0f; player->vertices[10] = 0.0f; // Vertex 2 (bottom-right)
+            player->vertices[15] = 1.0f; player->vertices[16] = 1.0f; // Vertex 3 (top-right)
+            player->vertices[21] = 1.0f; player->vertices[22] = 1.0f; // Vertex 4 (top-right)
+            player->vertices[27] = 0.0f; player->vertices[28] = 1.0f; // Vertex 5 (top-left)
+            player->vertices[33] = 0.0f; player->vertices[34] = 0.0f; // Vertex 6 (bottom-left)
+            break;
+
+    }
+}
+
 void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b, game *game) {
     // Vertex 1 (bottom-left)
     vertices[0] = posX - size; vertices[1] = (posY - size) * game->resolution_ratio; vertices[2] = 0.0f;
-    vertices[3] = 0.0f; vertices[4] = 0.0f; vertices[5] = b;
+    vertices[3] = 1.0f; vertices[4] = 1.0f; vertices[5] = b;
 
     // Vertex 2 (bottom-right)
     vertices[6] = posX + size; vertices[7] = (posY - size) * game->resolution_ratio; vertices[8] = 0.0f;
-    vertices[9] = 1.0f; vertices[10] = 0.f; vertices[11] = b;
+    vertices[9] = 0.0f; vertices[10] = 1.0f; vertices[11] = b;
 
     // Vertex 3 (top-right)
     vertices[12] = posX + size; vertices[13] = (posY + size) * game->resolution_ratio; vertices[14] = 0.0f;
-    vertices[15] = 1.0f; vertices[16] = 1.0f; vertices[17] = b;
+    vertices[15] = 0.0f; vertices[16] = 0.0f; vertices[17] = b;
 
     // Vertex 4 (top-right)
     vertices[18] = posX + size; vertices[19] = (posY + size) * game->resolution_ratio; vertices[20] = 0.0f;
-    vertices[21] = 1.0f; vertices[22] = 1.0f; vertices[23] = b;
+    vertices[21] = 0.0f; vertices[22] = 0.0f; vertices[23] = b;
 
     // Vertex 5 (top-left)
     vertices[24] = posX - size; vertices[25] = (posY + size) * game->resolution_ratio; vertices[26] = 0.0f;
-    vertices[27] = 0.0f; vertices[28] = 1.0f; vertices[29] = b;
+    vertices[27] = 1.0f; vertices[28] = 0.0f; vertices[29] = b;
 
     // Vertex 6 (bottom-left)
     vertices[30] = posX - size; vertices[31] = (posY - size) * game->resolution_ratio; vertices[32] = 0.0f;
-    vertices[33] = 0.0f; vertices[34] = 0.0f; vertices[35] = b;
+    vertices[33] = 1.0f; vertices[34] = 1.0f; vertices[35] = b;
+
+    
 }
 
 
@@ -409,6 +527,7 @@ void add_to_snake(snake *player, game *game){
     }
 
     snake *newnode = make_snake_node(tmp->pos_x, tmp->pos_y, game);
+    newnode->facing = tmp->facing;
     tmp->next = newnode;
 }
 
@@ -420,8 +539,9 @@ void print_snake(snake *player){
         return;
     }
     while (tmp != NULL){
-        // printf("SNAKE #%d\n", count);
-        // printf("X %f\n Y %f\n W %f\n", tmp->pos_x, tmp->pos_y, tmp->width);
+        printf("SNAKE #%d\n", count);
+        printf("X %f\n Y %f\n W %f\n", tmp->pos_x, tmp->pos_y, tmp->width);
+        printf("FACING: %d\n", tmp->facing);
         count++;
         tmp = tmp->next;
     }
@@ -431,6 +551,7 @@ void move_snake(snake *player, float x_speed, float y_speed){
     if (player == NULL){return;}
     float prev_x = player->pos_x;
     float prev_y = player->pos_y;
+    enum direction prev_facing = player->facing;
 
     player->pos_x += x_speed;
     player->pos_y += y_speed;
@@ -439,10 +560,14 @@ void move_snake(snake *player, float x_speed, float y_speed){
     while (tmp != NULL){
         float tmp_x = tmp->pos_x;
         float tmp_y = tmp->pos_y;
+        enum direction tmp_facing = tmp->facing;
+        tmp->facing = prev_facing;
         tmp->pos_x = prev_x;
         tmp->pos_y = prev_y;
+        prev_facing = tmp_facing;
         prev_x = tmp_x;
         prev_y = tmp_y;
+
         tmp = tmp->next;
     }
 

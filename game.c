@@ -1,6 +1,9 @@
 #include "game.h"
 #include "graphics.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
+#define STB_IMAGE_IMPLEMENTATION
 #define TARGET_FPS 60
 #define OBJECT_COUNT 3
 #define PLAYER 0
@@ -88,11 +91,34 @@ void setup_game(snake *player, food *food, game *game){
     setup_quad_vertx_data(game->VBO[PLAYER], game->VAO[PLAYER], player->vertices, sizeof(player->vertices)/sizeof(float));
     setup_quad_vertx_data(game->VBO[FOOD], game->VAO[FOOD], food->vertices, sizeof(food->vertices)/sizeof(float));
     setup_text_vertx_data(game->VBO[TEXT], game->VAO[TEXT]);
+    load_textures(player, food, game);
     game->shader_program_quads = make_shader_program("vertex_shader_quads.glsl","fragment_shader_quads.glsl");
     game->shader_program_text = make_shader_program("vertex_shader_text.glsl","fragment_shader_text.glsl");
     game->last_time = glfwGetTime();
     game->tick_counter = 0;
 
+}
+
+void load_textures(snake *player, food *food, game *game){
+    glGenTextures(1, &(player->texture));
+    glBindTexture(GL_TEXTURE_2D, player->texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    int width, height, nrChannels;
+    //nrChannels = 3;
+    unsigned char *data = stbi_load("snek_head.png", &width, &height, &nrChannels, 0);
+    if (data){
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        printf("Texture loaded successfully: %d x %d, channels: %d\n", width, height, nrChannels);
+
+    }else{
+        printf("Failed to load texture\n");
+    }
+    stbi_image_free(data);
 }
 
 void randomize_food_coords(food *food, snake *player){
@@ -263,27 +289,27 @@ void update_food_verticies(food *food, float r, float g, float b, game *game){
 void update_quad_vertices(float vertices[], float posX, float posY, float size, float r, float g, float b, game *game) {
     // Vertex 1 (bottom-left)
     vertices[0] = posX - size; vertices[1] = (posY - size) * game->resolution_ratio; vertices[2] = 0.0f;
-    vertices[3] = r; vertices[4] = g; vertices[5] = b;
+    vertices[3] = 0.0f; vertices[4] = 0.0f; vertices[5] = b;
 
     // Vertex 2 (bottom-right)
     vertices[6] = posX + size; vertices[7] = (posY - size) * game->resolution_ratio; vertices[8] = 0.0f;
-    vertices[9] = r; vertices[10] = g; vertices[11] = b;
+    vertices[9] = 1.0f; vertices[10] = 0.f; vertices[11] = b;
 
     // Vertex 3 (top-right)
     vertices[12] = posX + size; vertices[13] = (posY + size) * game->resolution_ratio; vertices[14] = 0.0f;
-    vertices[15] = r; vertices[16] = g; vertices[17] = b;
+    vertices[15] = 1.0f; vertices[16] = 1.0f; vertices[17] = b;
 
     // Vertex 4 (top-right)
     vertices[18] = posX + size; vertices[19] = (posY + size) * game->resolution_ratio; vertices[20] = 0.0f;
-    vertices[21] = r; vertices[22] = g; vertices[23] = b;
+    vertices[21] = 1.0f; vertices[22] = 1.0f; vertices[23] = b;
 
     // Vertex 5 (top-left)
     vertices[24] = posX - size; vertices[25] = (posY + size) * game->resolution_ratio; vertices[26] = 0.0f;
-    vertices[27] = r; vertices[28] = g; vertices[29] = b;
+    vertices[27] = 0.0f; vertices[28] = 1.0f; vertices[29] = b;
 
     // Vertex 6 (bottom-left)
     vertices[30] = posX - size; vertices[31] = (posY - size) * game->resolution_ratio; vertices[32] = 0.0f;
-    vertices[33] = r; vertices[34] = g; vertices[35] = b;
+    vertices[33] = 0.0f; vertices[34] = 0.0f; vertices[35] = b;
 }
 
 

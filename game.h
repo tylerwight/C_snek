@@ -1,6 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
 #define GLEW_STATIC
+
+#include "stb_image.h"
+
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <time.h>
@@ -21,6 +25,7 @@ struct snake{
     int snake_length;
     float vertices[36];
     struct snake *next;
+    GLuint texture;
 };
 typedef struct snake snake;
 
@@ -63,6 +68,7 @@ void clear_snake(snake *player, game *game);
 
 int game_loop();
 void setup_game(snake *player, food *food, game *game);
+void load_textures(snake *player, food *food, game *game);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 void process_movement(snake *player, food *food_item, float speed, game *game);

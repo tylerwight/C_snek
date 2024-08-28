@@ -100,7 +100,7 @@ void setup_quad_vertx_data(GLuint VBO, GLuint VAO, float vertices[], int vertex_
     glEnableVertexAttribArray(0);
 
     // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -240,6 +240,7 @@ void draw_player(snake *player, game *game){
     glBindVertexArray(game->VAO[PLAYER]);
     int vertex_count = player->snake_length * 36; 
     float *vertices = malloc(sizeof(float) * vertex_count);
+    glBindTexture(GL_TEXTURE_2D, player->texture);
     int count = 0;
 
     snake *tmp = player;
@@ -253,6 +254,7 @@ void draw_player(snake *player, game *game){
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_count, vertices, GL_DYNAMIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 6 * (player->snake_length));
+    //glDrawElements(GL_TRIANGLES, 6 * (player->snake_length), GL_UNSIGNED_INT, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     free(vertices);

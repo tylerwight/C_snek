@@ -14,7 +14,7 @@ OBJS = $(SRCS:.c=.o)
 ifeq ($(OS), Windows_NT)
     # Windows-specific settings
     INCLUDES = -I/ucrt64/include/freetype2 -I/ucrt64/include/libpng16 -I/ucrt64/include/harfbuzz -I/ucrt64/include/glib-2.0 -I/ucrt64/lib/glib-2.0/include
-    LIBS = -lm -lglfw3 -lglew32 -lopengl32 -lfreetype -lpng -lz -lbrotlicommon -lbrotlidec -lgdi32 -lbz2 -lharfbuzz -lgraphite2 -lrpcrt4 -lstdc++
+    LIBS = -lm -lglfw3 -lglew32 -lopengl32 -lfreetype -lpng -lz -lbrotlidec -lbrotlienc -lbrotlicommon -lgdi32 -lbz2 -lharfbuzz -lgraphite2 -lrpcrt4 -lstdc++
     LDFLAGS = -L/ucrt64/lib -static $(LIBS) -mwindows
 else
     # Linux-specific settings

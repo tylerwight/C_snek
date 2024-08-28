@@ -4,7 +4,7 @@ Snake written in pure C using only:
 - GLFW + GLEW - Opengl setup
 - freetype for font loading
 
-![alt text](image.png)
+![alt text](assets/image.png)
 
 
 

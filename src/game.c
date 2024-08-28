@@ -85,15 +85,15 @@ void setup_game(snake *player, food *food, game *game){
     game->window = setup_opengl(game->resolution_x, game->resolution_y, key_callback);
     glfwSetWindowUserPointer(game->window, game);
 
-    load_fonts(game->Characters, 128, "Montserrat.ttf");
+    load_fonts(game->Characters, 128, "assets/Montserrat.ttf");
     glGenBuffers(OBJECT_COUNT, game->VBO);
     glGenVertexArrays(OBJECT_COUNT, game->VAO);
     setup_quad_vertx_data(game->VBO[PLAYER], game->VAO[PLAYER], player->vertices, sizeof(player->vertices)/sizeof(float));
     setup_quad_vertx_data(game->VBO[FOOD], game->VAO[FOOD], food->vertices, sizeof(food->vertices)/sizeof(float));
     setup_text_vertx_data(game->VBO[TEXT], game->VAO[TEXT]);
     load_textures(player, food, game);
-    game->shader_program_quads = make_shader_program("vertex_shader_quads.glsl","fragment_shader_quads.glsl");
-    game->shader_program_text = make_shader_program("vertex_shader_text.glsl","fragment_shader_text.glsl");
+    game->shader_program_quads = make_shader_program("shaders/vertex_shader_quads.glsl","shaders/fragment_shader_quads.glsl");
+    game->shader_program_text = make_shader_program("shaders/vertex_shader_text.glsl","shaders/fragment_shader_text.glsl");
     game->last_time = glfwGetTime();
     game->tick_counter = 0;
 
@@ -108,7 +108,7 @@ void load_textures(snake *player, food *food, game *game){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     int width, height, nrChannels;
     //nrChannels = 3;
-    unsigned char *data = stbi_load("snek_head.png", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("assets/snek_head.png", &width, &height, &nrChannels, 0);
     if (data){
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);

@@ -1,5 +1,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
+#define GLEW_STATIC
+#define GLFW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <ft2build.h>

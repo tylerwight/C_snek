@@ -1,3 +1,5 @@
+#define GLEW_STATIC
+#define GLFW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>

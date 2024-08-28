@@ -9,14 +9,15 @@ SRCS = main.c graphics.c game.c
 
 # Object files
 OBJS = $(SRCS:.c=.o)
-INCLUDES = -I/usr/include/freetype2 -I/usr/include/libpng16
-
+#INCLUDES = -I/usr/include/freetype2 -I/usr/include/libpng16 #linux
+INCLUDES = -I/ucrt64/include/freetype2 -I/ucrt64/include/libpng16 -I/ucrt64/include/harfbuzz -I/ucrt64/include/glib-2.0 -I/ucrt64/lib/glib-2.0/include # windows
 # Libraries
-LIBS = -lm -lglfw -lGLEW -lGL -lfreetype
+#LIBS = -lm -lglfw -lGLEW -lGL -lfreetype #linux
+LIBS = -lm -lglfw3 -lglew32 -lopengl32 -lfreetype -lgdi32 -lpng -lz -lbrotlicommon -lbrotlidec -lbz2 -lharfbuzz -lgraphite2 -lrpcrt4 -lstdc++ -mwindows
 
 # Compiler flags
 CFLAGS = $(INCLUDES) -Wall -Wextra -O2
-LDFLAGS = $(LIBS)
+LDFLAGS = -L/ucrt64/lib -static $(LIBS)
 
 # Default rule
 all: $(TARGET)

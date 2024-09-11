@@ -16,6 +16,11 @@ int game_loop(){
     food food;
     game game;
     setup_game(&player, &food, &game);
+    game.song = create_audio("assets/sneksong.wav");
+    game.die_sound = create_audio("assets/ouch_snek.wav");
+    game.eat_sound = create_audio("assets/eat_snek.wav");
+    alSourcePlay(game.song);
+    
 
     while (!glfwWindowShouldClose(game.window)){ // game loop
         glClear(GL_COLOR_BUFFER_BIT);
@@ -43,7 +48,11 @@ int game_loop(){
         if (game.tick_counter > 1000){
             game.tick_counter = 0;
         }
-
+        ALint state;
+        alGetSourcei(game.song, AL_SOURCE_STATE, &state);
+        if (state != AL_PLAYING){
+            alSourcePlay(game.song);
+        }
         if (game.tick_counter % 10 == 0){
             process_movement(&player, &food, 0.1, &game);
         }
@@ -61,6 +70,40 @@ int game_loop(){
 
 
 
+init_audio(){
+    // Initialize ALUT (the OpenAL Utility Toolkit)
+    alutInit(NULL, NULL);
+    
+    if (alutGetError() != ALUT_ERROR_NO_ERROR) {
+        fprintf(stderr, "Error initializing ALUT\n");
+        return EXIT_FAILURE;
+    }
+
+
+    return;
+}
+
+ALuint create_audio(char *filename){
+
+    // Generate a buffer to store sound data
+    ALuint buffer = alutCreateBufferFromFile(filename);
+    if (buffer == AL_NONE) {
+        fprintf(stderr, "Error loading WAV file\n");
+        alutExit();
+        return EXIT_FAILURE;
+    }
+
+    // Generate a source (source of the sound)
+    ALuint source;
+    alGenSources(1, &source);
+
+    // Attach the buffer with sound data to the source
+    alSourcei(source, AL_BUFFER, buffer);
+
+    // Play the sound
+    
+    return source;
+}
 
 
 
@@ -97,10 +140,12 @@ void setup_game(snake *player, food *food, game *game){
     game->shader_program_text = make_shader_program("shaders/vertex_shader_text.glsl","shaders/fragment_shader_text.glsl");
     game->last_time = glfwGetTime();
     game->tick_counter = 0;
+    init_audio();
 
 }
 
 void load_textures(snake *player, food *food, game *game){
+    //load texture 1
     glGenTextures(1, &(player->texture_head));
     glBindTexture(GL_TEXTURE_2D, player->texture_head);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
@@ -121,7 +166,7 @@ void load_textures(snake *player, food *food, game *game){
     }
     stbi_image_free(data);
 
-
+    //load texture 2
     glGenTextures(1, &(player->texture_body1));
     glBindTexture(GL_TEXTURE_2D, player->texture_body1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
@@ -142,7 +187,7 @@ void load_textures(snake *player, food *food, game *game){
     }
     stbi_image_free(data);
 
-
+    //load texture 3
     glGenTextures(1, &(player->texture_body2));
     glBindTexture(GL_TEXTURE_2D, player->texture_body2);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
@@ -164,7 +209,7 @@ void load_textures(snake *player, food *food, game *game){
     stbi_image_free(data);
 
 
-
+    //texture 4
     glGenTextures(1, &(food->texture));
     glBindTexture(GL_TEXTURE_2D, food->texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
@@ -241,8 +286,9 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
     static int count = 0;
 
     if (check_snake_self_collision(player)){
-            player->pos_y = 0;
-            player->pos_x = 0.05;
+        alSourcePlay(game->die_sound);
+        player->pos_y = 0;
+        player->pos_x = 0.05;
         clear_snake(player, game);
     }
 
@@ -252,9 +298,10 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
         player->facing = UP;
         if (check_snake_collision(player, food_item)) {
             randomize_food_coords(food_item, player);
+            alSourcePlay(game->eat_sound);  
             game->score += 1;  
             player->snake_length += 1;   
-            add_to_snake(player, game);     
+            add_to_snake(player, game);   
         }
     }
     if (game->key_pressed == DOWN && (player_ymin > -1.0f)) {
@@ -262,10 +309,11 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
         move_snake(player, 0.0f, -speed);
         player->facing = DOWN;
         if (check_snake_collision(player, food_item)) {
+            alSourcePlay(game->eat_sound);   
             randomize_food_coords(food_item, player);
             game->score += 1;
             player->snake_length += 1;   
-            add_to_snake(player, game);   
+            add_to_snake(player, game);  
         }
     }
     if (game->key_pressed == LEFT && (player_xmin > -1.0f)) {
@@ -273,20 +321,23 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
         move_snake(player, -speed, 0.0f);
         player->facing = LEFT;
         if (check_snake_collision(player, food_item)) {
+            alSourcePlay(game->eat_sound);  
             randomize_food_coords(food_item, player);
             game->score += 1;
             player->snake_length += 1;   
-            add_to_snake(player, game);   
+            add_to_snake(player, game);  
         }
     }
     if (game->key_pressed == RIGHT && (player_xmax < 1.0f)) {
         move_snake(player, +speed, 0.0f);
         player->facing = RIGHT;
         if (check_snake_collision(player, food_item)) {
+            alSourcePlay(game->eat_sound);  
             randomize_food_coords(food_item, player);
             game->score += 1;
             player->snake_length += 1;   
             add_to_snake(player, game);   
+            
         }
     }
 
@@ -294,6 +345,7 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
 
     if ((player->pos_y > 0.69 && player->pos_y < 0.71) && game->key_pressed == UP){
         if (wall_buffer >= 1){
+            alSourcePlay(game->die_sound);
             player->pos_y = 0;
             player->pos_x = 0.05;
             wall_buffer = 0;
@@ -304,30 +356,36 @@ void process_movement(snake *player, food *food_item, float speed, game *game) {
     }
     if ((player->pos_y < -0.69 && player->pos_y > -0.71) && game->key_pressed == DOWN){
         if (wall_buffer >= 1){
+            alSourcePlay(game->die_sound);
             player->pos_y = 0;
             player->pos_x = 0.05;
             wall_buffer = 0;
             clear_snake(player, game);
+            
         }
         wall_buffer += 1;
         
     }
     if ((player->pos_x > 0.94 && player->pos_x < 0.969) && game->key_pressed == RIGHT){
         if (wall_buffer >= 1){
+            alSourcePlay(game->die_sound);
             player->pos_y = 0;
             player->pos_x = 0.05;
             wall_buffer = 0;
             clear_snake(player, game);
+            
         }
         wall_buffer += 1;
         
     }
     if ((player->pos_x < -0.94 && player->pos_x > -0.969) && game->key_pressed == LEFT){
         if (wall_buffer >= 1){
+            alSourcePlay(game->die_sound);
             player->pos_y = 0;
             player->pos_x = 0.05;
             wall_buffer = 0;
             clear_snake(player, game);
+            
         }
         wall_buffer += 1;
         

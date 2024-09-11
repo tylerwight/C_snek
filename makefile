@@ -24,7 +24,7 @@ ifeq ($(OS), Windows_NT)
 else
     # Linux-specific settings
     INCLUDES = -I$(INC_DIR) -I/usr/include/freetype2 -I/usr/include/libpng16
-    LIBS = -lm -lglfw -lGLEW -lGL -lfreetype 
+    LIBS = -lm -lglfw -lGLEW -lGL -lfreetype -lopenal -lalut
     LDFLAGS = $(LIBS)
 endif
 

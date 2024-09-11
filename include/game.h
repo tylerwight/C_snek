@@ -4,7 +4,9 @@
 
 #include "stb_image.h"
 
-
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alut.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <time.h>
@@ -61,6 +63,9 @@ struct game{
     GLuint shader_program_text;
     GLuint shader_program_quads;
     enum direction key_pressed;
+    ALuint song;
+    ALuint eat_sound;
+    ALuint die_sound;
     
 };
 typedef struct game game;
@@ -89,6 +94,10 @@ int check_quad_collision(float player_x, float player_y, float player_size, floa
 int check_snake_collision(snake *player, food *food);
 int check_snake_self_collision(snake *player);
 void randomize_food_coords(food *food, snake *player);
+
+
+init_audio();
+ALuint create_audio(char *filename);
 
 
 #endif

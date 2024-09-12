@@ -217,19 +217,20 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
             exit(-1);
         }
 
-    glfwMakeContextCurrent(window);
+
+        glfwMakeContextCurrent(window);
 
         if (glewInit() != GLEW_OK)
         {
             printf("Failed to initialize GLEW\n");
             exit(-1);
         }
-    glfwSetKeyCallback(window, key_callback);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    return window;
+        glfwSetKeyCallback(window, key_callback);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        return window;
 }
 
 void draw_player(snake *player, game *game){

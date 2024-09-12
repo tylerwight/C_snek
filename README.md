@@ -3,7 +3,6 @@
 Snake written in pure C using only:
 - GLFW + GLEW - Opengl setup
 - freetype for font loading
-
 ![alt text](assets/image.png)
 
 
@@ -18,6 +17,8 @@ sudo apt install libglfw3
 sudo apt install libglfw3-dev
 sudo apt install libfreetype6-dev
 sudo apt install libcglm-dev
+sudo apt install libopenal-dev 
+sudo apt install libalut-dev
 git clone https://github.com/tylerwight/C_snek
 
 cd C_snek
@@ -25,9 +26,8 @@ make
 ```
 
 - Windows
-
-```
 install MSYS2
+```
 pacman -S mingw-w64-ucrt-x86_64-gcc
 pacman -S mingw-w64-ucrt-x86_64-glew
 pacman -S mingw-w64-ucrt-x86_64-glfw

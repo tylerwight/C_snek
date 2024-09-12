@@ -48,11 +48,15 @@ int game_loop(){
         if (game.tick_counter > 1000){
             game.tick_counter = 0;
         }
+
+        //loop song
         ALint state;
         alGetSourcei(game.song, AL_SOURCE_STATE, &state);
         if (state != AL_PLAYING){
             alSourcePlay(game.song);
         }
+
+
         if (game.tick_counter % 10 == 0){
             process_movement(&player, &food, 0.1, &game);
         }

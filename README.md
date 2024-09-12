@@ -14,6 +14,7 @@ Snake written in pure C using only:
 
 ```
 sudo apt install build-essential
+sudo apt install git
 sudo apt install libglew-dev
 sudo apt install libglfw3
 sudo apt install libglfw3-dev
@@ -21,9 +22,10 @@ sudo apt install libfreetype6-dev
 sudo apt install libcglm-dev
 sudo apt install libopenal-dev 
 sudo apt install libalut-dev
-git clone https://github.com/tylerwight/C_snek
 
+git clone https://github.com/tylerwight/C_snek
 cd C_snek
+mkdir bin
 make
 ```
 

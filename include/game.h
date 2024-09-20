@@ -96,7 +96,7 @@ int check_snake_self_collision(snake *player);
 void randomize_food_coords(food *food, snake *player);
 
 
-void init_audio();
+int init_audio();
 ALuint create_audio(char *filename);
 
 

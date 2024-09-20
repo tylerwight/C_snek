@@ -3,6 +3,8 @@
 Snake written in pure C using only:
 - GLFW + GLEW - Opengl setup
 - freetype for font loading
+- OpenAL for audio
+
 
 
 ![alt text](assets/image.png)
@@ -48,3 +50,8 @@ git clone https://github.com/tylerwight/C_snek
 cd C_snek
 make
 ```
+
+# TODO
+- needs a refactor
+    - audio is tacked on
+    - coord/movement system is bad

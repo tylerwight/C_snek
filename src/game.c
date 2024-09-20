@@ -74,7 +74,7 @@ int game_loop(){
 
 
 
-init_audio(){
+void init_audio(){
     // Initialize ALUT (the OpenAL Utility Toolkit)
     alutInit(NULL, NULL);
     

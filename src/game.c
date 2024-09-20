@@ -84,7 +84,7 @@ int init_audio(){
     }
 
 
-    return;
+    return 0;
 }
 
 ALuint create_audio(char *filename){
